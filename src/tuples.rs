@@ -27,15 +27,15 @@ impl Tuple {
         Color::from(Tuple::new(x, y, z, 0.0))
     }
 
-    fn is_point(&self) -> bool {
+    pub fn is_point(&self) -> bool {
         self.w == 1.0
     }
 
-    fn is_vector(&self) -> bool {
+    pub fn is_vector(&self) -> bool {
         self.w == 0.0
     }
 
-    fn magnitude(&self) -> f64 {
+    pub fn magnitude(&self) -> f64 {
         (self.x.powi(2) + self.y.powi(2) + self.z.powi(2) + self.w.powi(2)).sqrt()
     }
 
@@ -49,11 +49,11 @@ impl Tuple {
         )
     }
 
-    fn dot(&self, other: &Tuple) -> f64 {
+    pub fn dot(&self, other: &Tuple) -> f64 {
         self.x * other.x + self.y * other.y + self.z * other.z + self.w * other.w
     }
 
-    fn cross(&self, other: &Tuple) -> Tuple {
+    pub fn cross(&self, other: &Tuple) -> Tuple {
         Tuple::vector(
             self.y * other.z - self.z * other.y,
             self.z * other.x - self.x * other.z,
