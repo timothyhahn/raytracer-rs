@@ -58,26 +58,26 @@ impl Canvas {
             if line.len() > MAX_LINE_LENGTH as usize {
                 let mut split_line = String::new();
                 // Doing this by color to prevent splitting a color
-                let mut words: Vec<&str> = line.split(" ").collect();
+                let mut words: Vec<&str> = line.split(' ').collect();
                 let mut line_length = 0;
-                while words.len() > 0 {
+                while !words.is_empty() {
                     let word = words.remove(0);
                     line_length += word.len() + 1;
                     if line_length > MAX_LINE_LENGTH as usize {
                         split_line.pop(); // Remove space at end
-                        split_line.push_str("\n");
+                        split_line.push('\n');
                         line_length = word.len() + 1;
                     }
                     split_line.push_str(word);
-                    split_line.push_str(" ");
+                    split_line.push(' ');
                 }
                 split_line.pop(); // Removes space at end
                 line = split_line;
             }
-            line.push_str("\n");
+            line.push('\n');
             ppm.push_str(&line);
         }
-        ppm.push_str("\n");
+        ppm.push('\n');
         ppm
     }
 

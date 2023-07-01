@@ -20,7 +20,6 @@ pub fn tick(env: &Environment, proj: Projectile) -> Projectile {
 mod tests {
     use crate::fire_projectiles::{tick, Environment, Projectile};
     use crate::tuples::Tuple;
-    use std::fmt::Alignment::Left;
 
     #[test]
     fn test_ticking_projectile() {

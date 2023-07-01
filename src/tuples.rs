@@ -1,3 +1,4 @@
+use crate::floats;
 use std::ops::{Add, Div, Mul, Neg, Sub};
 
 // Tuple struct, as well as operators. Equality is done using the EPSILON trick
@@ -121,10 +122,10 @@ impl Div<f64> for Tuple {
 
 impl PartialEq for Tuple {
     fn eq(&self, other: &Self) -> bool {
-        float_equal(self.x, other.x)
-            && float_equal(self.y, other.y)
-            && float_equal(self.z, other.z)
-            && float_equal(self.w, other.w)
+        floats::float_equal(self.x, other.x)
+            && floats::float_equal(self.y, other.y)
+            && floats::float_equal(self.z, other.z)
+            && floats::float_equal(self.w, other.w)
     }
 }
 
@@ -192,8 +193,8 @@ impl Mul<Color> for Color {
 impl PartialEq for Color {
     fn eq(&self, other: &Self) -> bool {
         // This should be a relatively fast op?
-        let self_tuple = Tuple::from(self.clone());
-        let other_tuple = Tuple::from(other.clone());
+        let self_tuple = Tuple::from(*self);
+        let other_tuple = Tuple::from(*other);
         self_tuple == other_tuple
     }
 }
@@ -213,10 +214,6 @@ impl From<Color> for Tuple {
     fn from(color: Color) -> Self {
         Tuple::new(color.red, color.green, color.blue, COLOR_W)
     }
-}
-
-fn float_equal(a: f64, b: f64) -> bool {
-    (a - b).abs() < f64::EPSILON
 }
 
 #[cfg(test)]
