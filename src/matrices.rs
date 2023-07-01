@@ -212,10 +212,7 @@ impl Mul<Tuple> for Matrix {
         let mut data = vec![0.0; 4];
 
         for (idx, row) in self.data.iter().enumerate() {
-            data[idx] = row[0] * other.x
-                + row[1] * other.y
-                + row[2] * other.z
-                + row[3] * other.w;
+            data[idx] = row[0] * other.x + row[1] * other.y + row[2] * other.z + row[3] * other.w;
         }
 
         Tuple::new(data[0], data[1], data[2], data[3])
@@ -237,9 +234,9 @@ impl PartialEq for Matrix {
 
 #[cfg(test)]
 mod tests {
-    use std::f64::consts::PI;
     use crate::matrices::Matrix;
     use crate::tuples::Tuple;
+    use std::f64::consts::PI;
 
     // First since this is the most used type of matrix.
     #[test]
@@ -671,10 +668,7 @@ mod tests {
         let matrix_c = matrix_a.clone() * matrix_b.clone();
 
         assert_ne!(matrix_a, matrix_b);
-        assert_eq!(
-            matrix_a,
-            matrix_c * matrix_b.inverse().unwrap()
-        );
+        assert_eq!(matrix_a, matrix_c * matrix_b.inverse().unwrap());
     }
 
     #[test]
@@ -747,7 +741,8 @@ mod tests {
         let half_quarter = Matrix::rotation_x(PI / 4.0);
         let full_quarter = Matrix::rotation_x(PI / 2.0);
 
-        let expected_half_quarter_point = Tuple::point(0.0, 2.0_f64.sqrt() / 2.0, 2.0_f64.sqrt() / 2.0);
+        let expected_half_quarter_point =
+            Tuple::point(0.0, 2.0_f64.sqrt() / 2.0, 2.0_f64.sqrt() / 2.0);
         let expected_full_quarter_point = Tuple::point(0.0, 0.0, 1.0);
 
         assert_eq!(half_quarter * point, expected_half_quarter_point);
@@ -771,7 +766,8 @@ mod tests {
         let half_quarter = Matrix::rotation_y(PI / 4.0);
         let full_quarter = Matrix::rotation_y(PI / 2.0);
 
-        let expected_half_quarter_point = Tuple::point(2.0_f64.sqrt() / 2.0, 0.0, 2.0_f64.sqrt() / 2.0);
+        let expected_half_quarter_point =
+            Tuple::point(2.0_f64.sqrt() / 2.0, 0.0, 2.0_f64.sqrt() / 2.0);
         let expected_full_quarter_point = Tuple::point(1.0, 0.0, 0.0);
 
         assert_eq!(half_quarter * point, expected_half_quarter_point);
@@ -784,7 +780,8 @@ mod tests {
         let half_quarter = Matrix::rotation_z(PI / 4.0);
         let full_quarter = Matrix::rotation_z(PI / 2.0);
 
-        let expected_half_quarter_point = Tuple::point(-2.0_f64.sqrt() / 2.0, 2.0_f64.sqrt() / 2.0, 0.0);
+        let expected_half_quarter_point =
+            Tuple::point(-2.0_f64.sqrt() / 2.0, 2.0_f64.sqrt() / 2.0, 0.0);
         let expected_full_quarter_point = Tuple::point(-1.0, 0.0, 0.0);
 
         assert_eq!(half_quarter * point, expected_half_quarter_point);

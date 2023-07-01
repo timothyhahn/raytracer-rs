@@ -1,8 +1,11 @@
-use std::f64::consts::PI;
 use raytracer::canvas::Canvas;
 use raytracer::fire_projectiles::{tick, Environment, Projectile};
 use raytracer::matrices::Matrix;
 use raytracer::tuples::Tuple;
+use std::f64::consts::PI;
+use raytracer::intersections::Intersection;
+use raytracer::rays::Ray;
+use raytracer::sphere::Sphere;
 
 fn draw_chapter_2_arc() {
     let canvas_width: u32 = 990;
@@ -59,8 +62,34 @@ fn draw_chapter_4_clock() {
     let _ = canvas.write_to_file("outputs/chapter_4_clock.ppm");
 }
 
+fn draw_chapter_5_circle() {
+    let canvas_width = 100;
+    let canvas_height = 100;
+    let ray_origin = Tuple::point(0.0, 0.0, -5.0);
+    let wall_z = 10.0;
+    let wall_size = 7.0;
+    let pixel_size = wall_size / (canvas_width as f64);
+    let half = wall_size / 2.0;
+    let mut canvas = Canvas::new(canvas_width, canvas_height);
+    let color = Tuple::color(1.0, 0.0, 0.0);
+    let sphere = Sphere::new();
+    for y in 0..canvas_height - 1 {
+        let world_y = half - pixel_size * (y as f64);
+        for x in 0..canvas_width - 1 {
+            let world_x = -half + pixel_size * (x as f64);
+            let position = Tuple::point(world_x, world_y, wall_z);
+            let r = Ray::new(ray_origin, (position - ray_origin).normalize());
+            let intersections = sphere.intersect(r);
+            if Intersection::hit(intersections).is_some() {
+                canvas.write(x, y, &color);
+            }
+        }
+    }
+    let _ = canvas.write_to_file("outputs/chapter_5_circle.ppm");
+}
 
 fn main() {
     draw_chapter_2_arc();
     draw_chapter_4_clock();
+    draw_chapter_5_circle();
 }
