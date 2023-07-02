@@ -2,6 +2,8 @@ pub mod canvas;
 pub mod fire_projectiles;
 pub mod floats;
 pub mod intersections;
+pub mod lights;
+pub mod materials;
 pub mod matrices;
 pub mod objects;
 pub mod rays;

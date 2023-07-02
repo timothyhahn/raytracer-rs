@@ -60,6 +60,10 @@ impl Tuple {
             self.x * other.y - self.y * other.x,
         )
     }
+
+    pub fn reflect(&self, normal: &Tuple) -> Tuple {
+        *self - *normal * 2.0 * self.dot(&normal)
+    }
 }
 
 impl Add for Tuple {
@@ -143,6 +147,14 @@ const COLOR_W: f64 = 0.0;
 impl Color {
     pub fn new(red: f64, green: f64, blue: f64) -> Color {
         Color { red, green, blue }
+    }
+
+    pub fn black() -> Color {
+        Color::new(0.0, 0.0, 0.0)
+    }
+
+    pub fn white() -> Color {
+        Color::new(1.0, 1.0, 1.0)
     }
 }
 
@@ -363,7 +375,7 @@ mod tests {
             Tuple::vector(
                 1.0 / 14.0_f64.sqrt(),
                 2.0 / 14.0_f64.sqrt(),
-                3.0 / 14.0_f64.sqrt()
+                3.0 / 14.0_f64.sqrt(),
             )
         );
     }
@@ -429,5 +441,21 @@ mod tests {
         let color2 = Color::new(0.9, 1.0, 0.1);
         let result = color1 * color2;
         assert_eq!(result, Color::new(0.9, 0.2, 0.04));
+    }
+
+    #[test]
+    fn test_reflecting_a_vector_approaching_at_45_degrees() {
+        let vector = Tuple::vector(1.0, -1.0, 0.0);
+        let normal = Tuple::vector(0.0, 1.0, 0.0);
+        let reflect = vector.reflect(&normal);
+        assert_eq!(reflect, Tuple::vector(1.0, 1.0, 0.0));
+    }
+
+    #[test]
+    fn test_reflecting_vector_off_slanted_surface() {
+        let vector = Tuple::vector(0.0, -1.0, 0.0);
+        let normal = Tuple::vector(2.0_f64.sqrt() / 2.0, 2.0_f64.sqrt() / 2.0, 0.0);
+        let reflect = vector.reflect(&normal);
+        assert_eq!(reflect, Tuple::vector(1.0, 0.0, 0.0));
     }
 }
