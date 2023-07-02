@@ -100,8 +100,10 @@ fn draw_chapter_6_sphere() {
     let half = wall_size / 2.0;
     let mut canvas = Canvas::new(canvas_width, canvas_height);
     let mut sphere = Sphere::new();
-    let mut material = Material::default();
-    material.color = Tuple::color(1.0, 0.2, 1.0);
+    let material = Material {
+        color: Tuple::color(1.0, 0.2, 1.0),
+        ..Default::default()
+    };
     sphere.set_material(material);
     let light_position = Tuple::point(-10.0, 10.0, -10.0);
     let light_color = Color::white();
@@ -114,13 +116,13 @@ fn draw_chapter_6_sphere() {
             let position = Tuple::point(world_x, world_y, wall_z);
             let r = Ray::new(ray_origin, (position - ray_origin).normalize());
             let intersections = sphere.intersect(r);
-            Intersection::hit(intersections).map(|hit| {
+            if let Some(hit) = Intersection::hit(intersections) {
                 let point = r.position(hit.time);
                 let normal = hit.object.normal_at(point);
                 let eye = -r.direction;
                 let color = hit.object.material.lighting(light, point, eye, normal);
                 canvas.write(x, y, &color);
-            });
+            }
         }
     }
     let _ = canvas.write_to_file("outputs/chapter_6_sphere.ppm");

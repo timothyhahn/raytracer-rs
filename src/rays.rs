@@ -17,10 +17,7 @@ impl Ray {
     }
 
     pub fn transform(self, matrix: Matrix) -> Ray {
-        Ray::new(
-            matrix.clone() * self.origin,
-            matrix.clone() * self.direction,
-        )
+        Ray::new(matrix.clone() * self.origin, matrix * self.direction)
     }
 }
 

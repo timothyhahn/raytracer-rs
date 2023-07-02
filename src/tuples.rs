@@ -62,7 +62,7 @@ impl Tuple {
     }
 
     pub fn reflect(&self, normal: &Tuple) -> Tuple {
-        *self - *normal * 2.0 * self.dot(&normal)
+        *self - *normal * 2.0 * self.dot(normal)
     }
 }
 

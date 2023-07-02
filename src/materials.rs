@@ -31,10 +31,6 @@ impl Material {
         }
     }
 
-    pub fn default() -> Material {
-        Material::new(Color::white(), 0.1, 0.9, 0.9, 200.0)
-    }
-
     pub fn lighting(
         &self,
         light: PointLight,
@@ -76,6 +72,12 @@ impl Material {
         }
 
         ambient + diffuse + specular
+    }
+}
+
+impl Default for Material {
+    fn default() -> Material {
+        Material::new(Color::white(), 0.1, 0.9, 0.9, 200.0)
     }
 }
 

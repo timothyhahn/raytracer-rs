@@ -18,11 +18,7 @@ impl<T: Object + Clone> Intersection<'_, T> {
 
     // Assumes intersections are sorted
     pub fn hit(intersections: Vec<Intersection<T>>) -> Option<Intersection<T>> {
-        intersections
-            .iter()
-            .filter(|i| i.time >= 0.0)
-            .next()
-            .map(|i| i.clone())
+        intersections.iter().find(|i| i.time >= 0.0).cloned()
     }
 }
 
