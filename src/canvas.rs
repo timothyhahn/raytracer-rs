@@ -22,7 +22,7 @@ impl Canvas {
         }
     }
 
-    pub fn write(&mut self, x: u32, y: u32, color: &Color) {
+    pub fn write_pixel(&mut self, x: u32, y: u32, color: &Color) {
         if x >= self.width || y >= self.height {
             println!(
                 "Ignoring pixel at ({}, {}), as canvas size is ({},{})",
@@ -31,6 +31,10 @@ impl Canvas {
             return;
         }
         self.pixels[y as usize][x as usize] = *color;
+    }
+
+    pub fn pixel_at(&self, x: u32, y: u32) -> Color {
+        self.pixels[y as usize][x as usize]
     }
 
     pub fn to_ppm(&self) -> String {
@@ -103,7 +107,7 @@ mod tests {
     use crate::canvas::Color;
 
     #[test]
-    fn test_creating_a_canvas() {
+    fn creating_a_canvas() {
         let c = Canvas::new(10, 20);
         assert_eq!(c.width, 10);
         assert_eq!(c.height, 20);
@@ -115,23 +119,23 @@ mod tests {
     }
 
     #[test]
-    fn test_can_write_to_canvas() {
+    fn can_write_to_canvas() {
         let mut c = Canvas::new(10, 20);
         let red = Color::new(1.0, 0.0, 0.0);
-        c.write(2, 3, &red);
+        c.write_pixel(2, 3, &red);
         assert_eq!(c.pixels[3][2], red);
     }
 
     #[test]
-    fn test_canvas_ignores_pixel_out_of_bounds() {
+    fn canvas_ignores_pixel_out_of_bounds() {
         let mut c = Canvas::new(10, 20);
         let red = Color::new(1.0, 0.0, 0.0);
-        c.write(10, 20, &red);
+        c.write_pixel(10, 20, &red);
         assert_eq!(c.pixels[19][9], Color::new(0.0, 0.0, 0.0));
     }
 
     #[test]
-    fn test_write_ppm_header() {
+    fn write_ppm_header() {
         let c = Canvas::new(5, 3);
         let ppm = c.to_ppm();
         let lines: Vec<&str> = ppm.lines().collect();
@@ -141,14 +145,14 @@ mod tests {
     }
 
     #[test]
-    fn test_write_ppm_pixel_data() {
+    fn write_ppm_pixel_data() {
         let mut c = Canvas::new(5, 3);
         let c1 = Color::new(1.5, 0.0, 0.0);
         let c2 = Color::new(0.0, 0.5, 0.0);
         let c3 = Color::new(-0.5, 0.0, 1.0);
-        c.write(0, 0, &c1);
-        c.write(2, 1, &c2);
-        c.write(4, 2, &c3);
+        c.write_pixel(0, 0, &c1);
+        c.write_pixel(2, 1, &c2);
+        c.write_pixel(4, 2, &c3);
         let ppm = c.to_ppm();
         let lines: Vec<&str> = ppm.lines().collect();
         assert_eq!(lines[3], "255 0 0 0 0 0 0 0 0 0 0 0 0 0 0");
@@ -157,7 +161,7 @@ mod tests {
     }
 
     #[test]
-    fn test_split_long_lines_in_ppm() {
+    fn split_long_lines_in_ppm() {
         let mut c = Canvas::new(10, 2);
         let color = Color::new(1.0, 0.8, 0.6);
         for row in c.pixels.iter_mut() {
@@ -186,7 +190,7 @@ mod tests {
     }
 
     #[test]
-    fn test_ppm_files_end_with_newline() {
+    fn ppm_files_end_with_newline() {
         let c = Canvas::new(5, 3);
         let ppm = c.to_ppm();
         assert_eq!(ppm.chars().last(), Some('\n'));

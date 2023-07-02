@@ -240,7 +240,7 @@ mod tests {
 
     // First since this is the most used type of matrix.
     #[test]
-    fn test_create_4x4_matrix() {
+    fn create_4x4_matrix() {
         let data = vec![
             vec![1.0, 2.0, 3.0, 4.0],
             vec![5.5, 6.5, 7.5, 8.5],
@@ -260,7 +260,7 @@ mod tests {
     }
 
     #[test]
-    fn test_create_2x2_matrix() {
+    fn create_2x2_matrix() {
         let data = vec![vec![-3.0, 5.0], vec![1.0, -2.0]];
         let matrix = Matrix::new(data);
 
@@ -272,7 +272,7 @@ mod tests {
     }
 
     #[test]
-    fn test_create_3x3_matrix() {
+    fn create_3x3_matrix() {
         let data = vec![
             vec![-3.0, 5.0, 0.0],
             vec![1.0, -2.0, -7.0],
@@ -287,7 +287,7 @@ mod tests {
     }
 
     #[test]
-    fn test_equality_with_identical_matrices() {
+    fn equality_with_identical_matrices() {
         let matrix_a = Matrix::new(vec![
             vec![1.0, 2.0, 3.0, 4.0],
             vec![5.0, 6.0, 7.0, 8.0],
@@ -306,7 +306,7 @@ mod tests {
     }
 
     #[test]
-    fn test_inequality_with_similar_matrices() {
+    fn inequality_with_similar_matrices() {
         let matrix_a = Matrix::new(vec![
             vec![1.0, 2.0, 3.0, 4.0],
             vec![5.0, 6.0, 7.0, 8.0],
@@ -325,7 +325,7 @@ mod tests {
     }
 
     #[test]
-    fn test_multiply_two_matrices() {
+    fn multiply_two_matrices() {
         let matrix_a = Matrix::new(vec![
             vec![1.0, 2.0, 3.0, 4.0],
             vec![5.0, 6.0, 7.0, 8.0],
@@ -351,7 +351,7 @@ mod tests {
     }
 
     #[test]
-    fn test_multiply_matrix_by_tuple() {
+    fn multiply_matrix_by_tuple() {
         let matrix = Matrix::new(vec![
             vec![1.0, 2.0, 3.0, 4.0],
             vec![2.0, 4.0, 4.0, 2.0],
@@ -364,7 +364,7 @@ mod tests {
     }
 
     #[test]
-    fn test_multiply_by_identity_matrix() {
+    fn multiply_by_identity_matrix() {
         let matrix = Matrix::new(vec![
             vec![0.0, 1.0, 2.0, 4.0],
             vec![1.0, 2.0, 4.0, 8.0],
@@ -378,7 +378,7 @@ mod tests {
     }
 
     #[test]
-    fn test_multiplying_identity_matrix_by_tuple() {
+    fn multiplying_identity_matrix_by_tuple() {
         let tuple = Tuple::new(1.0, 2.0, 3.0, 4.0);
         let identity_matrix = Matrix::identity(4);
 
@@ -386,7 +386,7 @@ mod tests {
     }
 
     #[test]
-    fn test_transposing_a_matrix() {
+    fn transposing_a_matrix() {
         let matrix = Matrix::new(vec![
             vec![0.0, 9.0, 3.0, 0.0],
             vec![9.0, 8.0, 0.0, 8.0],
@@ -405,14 +405,14 @@ mod tests {
     }
 
     #[test]
-    fn test_calculating_determinant_of_2x2_matrix() {
+    fn calculating_determinant_of_2x2_matrix() {
         let matrix = Matrix::new(vec![vec![1.0, 5.0], vec![-3.0, 2.0]]);
 
         assert_eq!(matrix.determinant(), 17.0);
     }
 
     #[test]
-    fn test_calculate_the_determinant_of_a_3x3_matrix() {
+    fn calculate_the_determinant_of_a_3x3_matrix() {
         let matrix = Matrix::new(vec![
             vec![1.0, 2.0, 6.0],
             vec![-5.0, 8.0, -4.0],
@@ -426,7 +426,7 @@ mod tests {
     }
 
     #[test]
-    fn test_calculate_the_determinant_of_a_4x4_matrix() {
+    fn calculate_the_determinant_of_a_4x4_matrix() {
         let matrix = Matrix::new(vec![
             vec![-2.0, -8.0, 3.0, 5.0],
             vec![-3.0, 1.0, 7.0, 3.0],
@@ -442,7 +442,7 @@ mod tests {
     }
 
     #[test]
-    fn test_2x2_submatrix_from_3x3_matrix() {
+    fn get_2x2_submatrix_from_3x3_matrix() {
         let matrix = Matrix::new(vec![
             vec![1.0, 5.0, 0.0],
             vec![-3.0, 2.0, 7.0],
@@ -455,7 +455,7 @@ mod tests {
     }
 
     #[test]
-    fn test_3x3_submatrix_from_4x4_matrix() {
+    fn get_3x3_submatrix_from_4x4_matrix() {
         let matrix = Matrix::new(vec![
             vec![-6.0, 1.0, 1.0, 6.0],
             vec![-8.0, 5.0, 8.0, 6.0],
@@ -473,7 +473,7 @@ mod tests {
     }
 
     #[test]
-    fn test_calculate_minor_of_3x3_matrix() {
+    fn calculate_minor_of_3x3_matrix() {
         let matrix = Matrix::new(vec![
             vec![3.0, 5.0, 0.0],
             vec![2.0, -1.0, -7.0],
@@ -484,7 +484,7 @@ mod tests {
     }
 
     #[test]
-    fn test_calculate_cofactor_of_3x3_matrix() {
+    fn calculate_cofactor_of_3x3_matrix() {
         let matrix = Matrix::new(vec![
             vec![3.0, 5.0, 0.0],
             vec![2.0, -1.0, -7.0],
@@ -498,7 +498,7 @@ mod tests {
     }
 
     #[test]
-    fn test_invertible_matrix() {
+    fn invertible_matrix() {
         let matrix = Matrix::new(vec![
             vec![6.0, 4.0, 4.0, 4.0],
             vec![5.0, 5.0, 7.0, 6.0],
@@ -510,7 +510,7 @@ mod tests {
     }
 
     #[test]
-    fn test_noninvertible_matrix() {
+    fn noninvertible_matrix() {
         let matrix = Matrix::new(vec![
             vec![-4.0, 2.0, -2.0, -3.0],
             vec![9.0, 6.0, 2.0, 6.0],
@@ -522,7 +522,7 @@ mod tests {
     }
 
     #[test]
-    fn test_invert_matrix() {
+    fn invert_matrix() {
         let matrix = Matrix::new(vec![
             vec![-5.0, 2.0, 6.0, -8.0],
             vec![1.0, -5.0, 1.0, 8.0],
@@ -573,7 +573,7 @@ mod tests {
     }
 
     #[test]
-    fn test_invert_matrix_2() {
+    fn invert_matrix_2() {
         let matrix = Matrix::new(vec![
             vec![8.0, -5.0, 9.0, 2.0],
             vec![7.0, 5.0, 6.0, 1.0],
@@ -612,7 +612,7 @@ mod tests {
     }
 
     #[test]
-    fn test_invert_matrix_3() {
+    fn invert_matrix_3() {
         let matrix = Matrix::new(vec![
             vec![9.0, 3.0, 0.0, 9.0],
             vec![-5.0, -2.0, -6.0, -3.0],
@@ -651,7 +651,7 @@ mod tests {
     }
 
     #[test]
-    fn test_multiplying_matrix_by_inverse_returns_original_matrix() {
+    fn multiplying_matrix_by_inverse_returns_original_matrix() {
         let matrix_a = Matrix::new(vec![
             vec![3.0, -9.0, 7.0, 3.0],
             vec![3.0, -8.0, 2.0, -9.0],
@@ -672,7 +672,7 @@ mod tests {
     }
 
     #[test]
-    fn test_multiplying_by_translation_matrix() {
+    fn multiplying_by_translation_matrix() {
         let transform = Matrix::translation(5.0, -3.0, 2.0);
         let point = Tuple::point(-3.0, 4.0, 5.0);
         let expected_point = Tuple::point(2.0, 1.0, 7.0);
@@ -681,7 +681,7 @@ mod tests {
     }
 
     #[test]
-    fn test_multiplying_by_inverse_of_a_translation_matrix() {
+    fn multiplying_by_inverse_of_a_translation_matrix() {
         let transform = Matrix::translation(5.0, -3.0, 2.0);
         let inv = transform.inverse().unwrap();
         let point = Tuple::point(-3.0, 4.0, 5.0);
@@ -691,7 +691,7 @@ mod tests {
     }
 
     #[test]
-    fn test_translation_does_not_affect_vectors() {
+    fn translation_does_not_affect_vectors() {
         let transform = Matrix::translation(5.0, -3.0, 2.0);
         let vector = Tuple::vector(-3.0, 4.0, 5.0);
 
@@ -699,7 +699,7 @@ mod tests {
     }
 
     #[test]
-    fn test_a_scaling_matrix_applied_to_a_point() {
+    fn a_scaling_matrix_applied_to_a_point() {
         let transform = Matrix::scaling(2.0, 3.0, 4.0);
         let point = Tuple::point(-4.0, 6.0, 8.0);
         let expected_point = Tuple::point(-8.0, 18.0, 32.0);
@@ -708,7 +708,7 @@ mod tests {
     }
 
     #[test]
-    fn test_a_scaling_matrix_applied_to_a_vector() {
+    fn a_scaling_matrix_applied_to_a_vector() {
         let transform = Matrix::scaling(2.0, 3.0, 4.0);
         let vector = Tuple::vector(-4.0, 6.0, 8.0);
         let expected_vector = Tuple::vector(-8.0, 18.0, 32.0);
@@ -717,7 +717,7 @@ mod tests {
     }
 
     #[test]
-    fn test_multiplying_by_the_inverse_of_a_scaling_matrix() {
+    fn multiplying_by_the_inverse_of_a_scaling_matrix() {
         let transform = Matrix::scaling(2.0, 3.0, 4.0);
         let inverse = transform.inverse().unwrap();
         let vector = Tuple::vector(-4.0, 6.0, 8.0);
@@ -727,7 +727,7 @@ mod tests {
     }
 
     #[test]
-    fn test_reflection() {
+    fn reflection() {
         let transform = Matrix::scaling(-1.0, 1.0, 1.0);
         let point = Tuple::point(2.0, 3.0, 4.0);
         let expected_point = Tuple::point(-2.0, 3.0, 4.0);
@@ -736,7 +736,7 @@ mod tests {
     }
 
     #[test]
-    fn test_rotating_around_the_x_axis() {
+    fn rotating_around_the_x_axis() {
         let point = Tuple::point(0.0, 1.0, 0.0);
         let half_quarter = Matrix::rotation_x(PI / 4.0);
         let full_quarter = Matrix::rotation_x(PI / 2.0);
@@ -750,7 +750,7 @@ mod tests {
     }
 
     #[test]
-    fn test_the_inverse_of_an_x_rotation_rotates_in_the_opposite_direction() {
+    fn the_inverse_of_an_x_rotation_rotates_in_the_opposite_direction() {
         let point = Tuple::point(0.0, 1.0, 0.0);
         let half_quarter = Matrix::rotation_x(PI / 4.0);
         let inv = half_quarter.inverse().unwrap();
@@ -761,7 +761,7 @@ mod tests {
     }
 
     #[test]
-    fn test_rotating_around_the_y_axis() {
+    fn rotating_around_the_y_axis() {
         let point = Tuple::point(0.0, 0.0, 1.0);
         let half_quarter = Matrix::rotation_y(PI / 4.0);
         let full_quarter = Matrix::rotation_y(PI / 2.0);
@@ -775,7 +775,7 @@ mod tests {
     }
 
     #[test]
-    fn test_rotating_around_the_z_axis() {
+    fn rotating_around_the_z_axis() {
         let point = Tuple::point(0.0, 1.0, 0.0);
         let half_quarter = Matrix::rotation_z(PI / 4.0);
         let full_quarter = Matrix::rotation_z(PI / 2.0);
@@ -789,7 +789,7 @@ mod tests {
     }
 
     #[test]
-    fn test_shearing_moves_x_in_proportion_to_y() {
+    fn shearing_moves_x_in_proportion_to_y() {
         let transform = Matrix::shearing(1.0, 0.0, 0.0, 0.0, 0.0, 0.0);
         let point = Tuple::point(2.0, 3.0, 4.0);
         let expected_point = Tuple::point(5.0, 3.0, 4.0);
@@ -798,7 +798,7 @@ mod tests {
     }
 
     #[test]
-    fn test_shearing_moves_x_in_proportion_to_z() {
+    fn shearing_moves_x_in_proportion_to_z() {
         let transform = Matrix::shearing(0.0, 1.0, 0.0, 0.0, 0.0, 0.0);
         let point = Tuple::point(2.0, 3.0, 4.0);
         let expected_point = Tuple::point(6.0, 3.0, 4.0);
@@ -807,7 +807,7 @@ mod tests {
     }
 
     #[test]
-    fn test_shearing_moves_y_in_proportion_to_x() {
+    fn shearing_moves_y_in_proportion_to_x() {
         let transform = Matrix::shearing(0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
         let point = Tuple::point(2.0, 3.0, 4.0);
         let expected_point = Tuple::point(2.0, 5.0, 4.0);
@@ -816,7 +816,7 @@ mod tests {
     }
 
     #[test]
-    fn test_shearing_moves_y_in_proportion_to_z() {
+    fn shearing_moves_y_in_proportion_to_z() {
         let transform = Matrix::shearing(0.0, 0.0, 0.0, 1.0, 0.0, 0.0);
         let point = Tuple::point(2.0, 3.0, 4.0);
         let expected_point = Tuple::point(2.0, 7.0, 4.0);
@@ -825,7 +825,7 @@ mod tests {
     }
 
     #[test]
-    fn test_shearing_moves_z_in_proportion_to_x() {
+    fn shearing_moves_z_in_proportion_to_x() {
         let transform = Matrix::shearing(0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
         let point = Tuple::point(2.0, 3.0, 4.0);
         let expected_point = Tuple::point(2.0, 3.0, 6.0);
@@ -834,7 +834,7 @@ mod tests {
     }
 
     #[test]
-    fn test_shearing_moves_z_in_proportion_to_y() {
+    fn shearing_moves_z_in_proportion_to_y() {
         let transform = Matrix::shearing(0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
         let point = Tuple::point(2.0, 3.0, 4.0);
         let expected_point = Tuple::point(2.0, 3.0, 7.0);
@@ -843,7 +843,7 @@ mod tests {
     }
 
     #[test]
-    fn test_individual_transformations_are_applied_in_sequence() {
+    fn individual_transformations_are_applied_in_sequence() {
         let point = Tuple::point(1.0, 0.0, 1.0);
         let a = Matrix::rotation_x(PI / 2.0);
         let b = Matrix::scaling(5.0, 5.0, 5.0);
@@ -863,7 +863,7 @@ mod tests {
     }
 
     #[test]
-    fn test_chained_transformations_must_be_applied_in_reverse_order() {
+    fn chained_transformations_must_be_applied_in_reverse_order() {
         let point = Tuple::point(1.0, 0.0, 1.0);
         let a = Matrix::rotation_x(PI / 2.0);
         let b = Matrix::scaling(5.0, 5.0, 5.0);

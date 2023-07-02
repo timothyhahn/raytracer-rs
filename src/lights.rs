@@ -21,7 +21,7 @@ mod tests {
     use crate::tuples::{Color, Tuple};
 
     #[test]
-    fn test_point_light_has_position_and_intensity() {
+    fn point_light_has_position_and_intensity() {
         let intensity = Color::new(1.0, 1.0, 1.0);
         let position = Tuple::point(0.0, 0.0, 0.0);
         let light = PointLight::new(position, intensity);

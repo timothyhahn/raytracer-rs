@@ -98,7 +98,7 @@ mod tests {
     use crate::tuples::{Color, Tuple};
 
     #[test]
-    fn test_default_material() {
+    fn default_material() {
         let material = Material::new(Color::white(), 0.1, 0.9, 0.9, 200.0);
         assert_eq!(material.color, Color::white());
         assert_eq!(material.ambient, 0.1);
@@ -108,7 +108,7 @@ mod tests {
     }
 
     #[test]
-    fn test_lighting_with_eye_between_light_and_surface() {
+    fn lighting_with_eye_between_light_and_surface() {
         let material = Material::default();
         let position = Tuple::point(0.0, 0.0, 0.0);
         let eye_vector = Tuple::vector(0.0, 0.0, -1.0);
@@ -119,7 +119,7 @@ mod tests {
     }
 
     #[test]
-    fn test_lighting_with_eye_between_light_and_surface_eye_offset_45_degrees() {
+    fn lighting_with_eye_between_light_and_surface_eye_offset_45_degrees() {
         let material = Material::default();
         let position = Tuple::point(0.0, 0.0, 0.0);
         let eye_vector = Tuple::vector(0.0, 2.0_f64.sqrt() / 2.0, -2.0_f64.sqrt() / 2.0);
@@ -130,7 +130,7 @@ mod tests {
     }
 
     #[test]
-    fn test_lighting_with_eye_opposite_surface_light_offset_45_degrees() {
+    fn lighting_with_eye_opposite_surface_light_offset_45_degrees() {
         let material = Material::default();
         let position = Tuple::point(0.0, 0.0, 0.0);
         let eye_vector = Tuple::vector(0.0, 0.0, -1.0);
@@ -141,7 +141,7 @@ mod tests {
     }
 
     #[test]
-    fn test_lighting_with_eye_in_path_of_reflection_vector() {
+    fn lighting_with_eye_in_path_of_reflection_vector() {
         let material = Material::default();
         let position = Tuple::point(0.0, 0.0, 0.0);
         let eye_vector = Tuple::vector(0.0, -2.0_f64.sqrt() / 2.0, -2.0_f64.sqrt() / 2.0);
@@ -152,7 +152,7 @@ mod tests {
     }
 
     #[test]
-    fn test_lighting_with_light_behind_surface() {
+    fn lighting_with_light_behind_surface() {
         let material = Material::default();
         let position = Tuple::point(0.0, 0.0, 0.0);
         let eye_vector = Tuple::vector(0.0, 0.0, -1.0);

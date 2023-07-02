@@ -28,7 +28,7 @@ mod tests {
     use crate::tuples::Tuple;
 
     #[test]
-    fn test_querying_a_ray() {
+    fn querying_a_ray() {
         let origin = Tuple::point(1.0, 2.0, 3.0);
         let direction = Tuple::vector(4.0, 5.0, 6.0);
         let ray = Ray::new(origin, direction);
@@ -37,7 +37,7 @@ mod tests {
     }
 
     #[test]
-    fn test_compute_point_from_distance() {
+    fn compute_point_from_distance() {
         let ray = Ray::new(Tuple::point(2.0, 3.0, 4.0), Tuple::vector(1.0, 0.0, 0.0));
         assert_eq!(ray.position(0.0), Tuple::point(2.0, 3.0, 4.0));
         assert_eq!(ray.position(1.0), Tuple::point(3.0, 3.0, 4.0));
@@ -46,7 +46,7 @@ mod tests {
     }
 
     #[test]
-    fn test_translating_ray() {
+    fn translating_ray() {
         let ray = Ray::new(Tuple::point(1.0, 2.0, 3.0), Tuple::vector(0.0, 1.0, 0.0));
         let translation = Matrix::translation(3.0, 4.0, 5.0);
         let translated_ray = ray.transform(translation);
@@ -55,7 +55,7 @@ mod tests {
     }
 
     #[test]
-    fn test_scaling_a_ray() {
+    fn scaling_a_ray() {
         let ray = Ray::new(Tuple::point(1.0, 2.0, 3.0), Tuple::vector(0.0, 1.0, 0.0));
         let scaling = Matrix::scaling(2.0, 3.0, 4.0);
         let scaled_ray = ray.transform(scaling);

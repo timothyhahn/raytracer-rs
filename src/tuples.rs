@@ -444,7 +444,7 @@ mod tests {
     }
 
     #[test]
-    fn test_reflecting_a_vector_approaching_at_45_degrees() {
+    fn reflecting_a_vector_approaching_at_45_degrees() {
         let vector = Tuple::vector(1.0, -1.0, 0.0);
         let normal = Tuple::vector(0.0, 1.0, 0.0);
         let reflect = vector.reflect(&normal);
@@ -452,7 +452,7 @@ mod tests {
     }
 
     #[test]
-    fn test_reflecting_vector_off_slanted_surface() {
+    fn reflecting_vector_off_slanted_surface() {
         let vector = Tuple::vector(0.0, -1.0, 0.0);
         let normal = Tuple::vector(2.0_f64.sqrt() / 2.0, 2.0_f64.sqrt() / 2.0, 0.0);
         let reflect = vector.reflect(&normal);

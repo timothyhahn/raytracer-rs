@@ -1,3 +1,4 @@
+pub mod camera;
 pub mod canvas;
 pub mod fire_projectiles;
 pub mod floats;
@@ -8,4 +9,6 @@ pub mod matrices;
 pub mod objects;
 pub mod rays;
 pub mod sphere;
+pub mod transformations;
 pub mod tuples;
+pub mod world;

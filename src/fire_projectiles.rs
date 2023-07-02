@@ -22,7 +22,7 @@ mod tests {
     use crate::tuples::Tuple;
 
     #[test]
-    fn test_ticking_projectile() {
+    fn ticking_projectile() {
         let mut p = Projectile {
             position: Tuple::point(0.0, 1.0, 0.0),
             velocity: Tuple::vector(1.0, 1.0, 0.0).normalize(),
