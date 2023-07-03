@@ -74,11 +74,7 @@ impl Add for Vector {
     type Output = Self;
 
     fn add(self, other: Self) -> Self {
-        Self::new(
-            self.x + other.x,
-            self.y + other.y,
-            self.z + other.z,
-        )
+        Self::new(self.x + other.x, self.y + other.y, self.z + other.z)
     }
 }
 
@@ -86,11 +82,7 @@ impl Sub for Vector {
     type Output = Self;
 
     fn sub(self, other: Self) -> Self {
-        Self::new(
-            self.x - other.x,
-            self.y - other.y,
-            self.z - other.z,
-        )
+        Self::new(self.x - other.x, self.y - other.y, self.z - other.z)
     }
 }
 
@@ -105,22 +97,14 @@ impl Neg for Vector {
 impl Mul<f64> for Vector {
     type Output = Self;
     fn mul(self, scalar: f64) -> Self::Output {
-        Self::new(
-            self.x * scalar,
-            self.y * scalar,
-            self.z * scalar,
-        )
+        Self::new(self.x * scalar, self.y * scalar, self.z * scalar)
     }
 }
 
 impl Div<f64> for Vector {
     type Output = Self;
     fn div(self, scalar: f64) -> Self::Output {
-        Self::new(
-            self.x / scalar,
-            self.y / scalar,
-            self.z / scalar,
-        )
+        Self::new(self.x / scalar, self.y / scalar, self.z / scalar)
     }
 }
 
@@ -169,11 +153,7 @@ impl Add for Point {
     type Output = Self;
 
     fn add(self, other: Self) -> Self {
-        Self::new(
-            self.x + other.x,
-            self.y + other.y,
-            self.z + other.z,
-        )
+        Self::new(self.x + other.x, self.y + other.y, self.z + other.z)
     }
 }
 
@@ -181,11 +161,7 @@ impl Add<Vector> for Point {
     type Output = Self;
 
     fn add(self, other: Vector) -> Point {
-        Self::new(
-            self.x + other.x,
-            self.y + other.y,
-            self.z + other.z,
-        )
+        Self::new(self.x + other.x, self.y + other.y, self.z + other.z)
     }
 }
 
@@ -193,11 +169,7 @@ impl Sub for Point {
     type Output = Vector;
 
     fn sub(self, other: Self) -> Vector {
-        Vector::new(
-            self.x - other.x,
-            self.y - other.y,
-            self.z - other.z,
-        )
+        Vector::new(self.x - other.x, self.y - other.y, self.z - other.z)
     }
 }
 
@@ -205,11 +177,7 @@ impl Sub<Vector> for Point {
     type Output = Self;
 
     fn sub(self, other: Vector) -> Self {
-        Self::new(
-            self.x - other.x,
-            self.y - other.y,
-            self.z - other.z,
-        )
+        Self::new(self.x - other.x, self.y - other.y, self.z - other.z)
     }
 }
 
@@ -217,33 +185,21 @@ impl Neg for Point {
     type Output = Self;
 
     fn neg(self) -> Self::Output {
-        Point::new(
-            -self.x,
-            -self.y,
-            -self.z,
-        )
+        Point::new(-self.x, -self.y, -self.z)
     }
 }
 
 impl Mul<f64> for Point {
     type Output = Self;
     fn mul(self, scalar: f64) -> Self::Output {
-        Self::new(
-            self.x * scalar,
-            self.y * scalar,
-            self.z * scalar,
-        )
+        Self::new(self.x * scalar, self.y * scalar, self.z * scalar)
     }
 }
 
 impl Div<f64> for Point {
     type Output = Self;
     fn div(self, scalar: f64) -> Self::Output {
-        Self::new(
-            self.x / scalar,
-            self.y / scalar,
-            self.z / scalar,
-        )
+        Self::new(self.x / scalar, self.y / scalar, self.z / scalar)
     }
 }
 

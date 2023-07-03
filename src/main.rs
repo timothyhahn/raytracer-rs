@@ -1,4 +1,6 @@
+use raytracer::camera::Camera;
 use raytracer::canvas::Canvas;
+use raytracer::color::Color;
 use raytracer::fire_projectiles::{tick, Environment, Projectile};
 use raytracer::intersections::Intersection;
 use raytracer::lights::PointLight;
@@ -6,12 +8,10 @@ use raytracer::materials::Material;
 use raytracer::matrices::Matrix4;
 use raytracer::rays::Ray;
 use raytracer::sphere::Sphere;
-use std::f64::consts::PI;
-use raytracer::camera::Camera;
-use raytracer::color::Color;
 use raytracer::transformations::view_transform;
 use raytracer::tuples::{Point, Tuple, Vector};
 use raytracer::world::World;
+use std::f64::consts::PI;
 
 #[allow(dead_code)]
 fn draw_chapter_2_arc() {
@@ -156,13 +156,19 @@ fn draw_chapter_7_world() {
 
     let left_wall = Sphere {
         material: floor_material,
-        transformation: Matrix4::translate(0.0, 0.0, 5.0) * Matrix4::rotate_y(-PI / 4.0) * Matrix4::rotate_x(PI / 2.0) * Matrix4::scale(10.0, 0.01, 10.0),
+        transformation: Matrix4::translate(0.0, 0.0, 5.0)
+            * Matrix4::rotate_y(-PI / 4.0)
+            * Matrix4::rotate_x(PI / 2.0)
+            * Matrix4::scale(10.0, 0.01, 10.0),
         ..Default::default()
     };
 
     let right_wall = Sphere {
         material: floor_material,
-        transformation: Matrix4::translate(0.0, 0.0, 5.0) * Matrix4::rotate_y(PI / 4.0) * Matrix4::rotate_x(PI / 2.0) * Matrix4::scale(10.0, 0.01, 10.0),
+        transformation: Matrix4::translate(0.0, 0.0, 5.0)
+            * Matrix4::rotate_y(PI / 4.0)
+            * Matrix4::rotate_x(PI / 2.0)
+            * Matrix4::scale(10.0, 0.01, 10.0),
         ..Default::default()
     };
 
@@ -207,11 +213,18 @@ fn draw_chapter_7_world() {
 
     let world = World {
         objects: vec![floor, left_wall, right_wall, middle, right, left],
-        light_source: Some(PointLight::new(Point::new(-10.0, 10.0, -10.0), Color::white())),
+        light_source: Some(PointLight::new(
+            Point::new(-10.0, 10.0, -10.0),
+            Color::white(),
+        )),
     };
 
     let mut camera = Camera::new(1000, 500, PI / 3.0);
-    camera.transform = view_transform(Point::new(0.0, 1.5, -5.0), Point::new(0.0, 1.0, 0.0), Vector::new(0.0, 1.0, 0.0));
+    camera.transform = view_transform(
+        Point::new(0.0, 1.5, -5.0),
+        Point::new(0.0, 1.0, 0.0),
+        Vector::new(0.0, 1.0, 0.0),
+    );
 
     let canvas = camera.render(world);
     let _ = canvas.write_to_file("outputs/chapter_7_world.ppm");

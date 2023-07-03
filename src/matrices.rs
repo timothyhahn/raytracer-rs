@@ -1,6 +1,6 @@
 use crate::floats::float_equal;
-use std::ops::Mul;
 use crate::tuples::{Point, Tuple, Vector};
+use std::ops::Mul;
 
 // Most things rely on Matrix4, everything else is used by Matrix2 for things like cofactors.
 #[derive(Debug, Copy, Clone)]
@@ -10,9 +10,7 @@ pub struct Matrix4 {
 
 impl Matrix4 {
     pub fn new(data: [[f64; 4]; 4]) -> Matrix4 {
-        Matrix4 {
-            data
-        }
+        Matrix4 { data }
     }
 
     // Transformation matrices
@@ -23,7 +21,7 @@ impl Matrix4 {
                 [0.0, 1.0, 0.0, 0.0],
                 [0.0, 0.0, 1.0, 0.0],
                 [0.0, 0.0, 0.0, 1.0],
-            ]
+            ],
         }
     }
 
@@ -34,7 +32,7 @@ impl Matrix4 {
                 [0.0, 1.0, 0.0, y],
                 [0.0, 0.0, 1.0, z],
                 [0.0, 0.0, 0.0, 1.0],
-            ]
+            ],
         }
     }
 
@@ -45,7 +43,7 @@ impl Matrix4 {
                 [0.0, y, 0.0, 0.0],
                 [0.0, 0.0, z, 0.0],
                 [0.0, 0.0, 0.0, 1.0],
-            ]
+            ],
         }
     }
 
@@ -55,8 +53,8 @@ impl Matrix4 {
                 [1.0, 0.0, 0.0, 0.0],
                 [0.0, r.cos(), -r.sin(), 0.0],
                 [0.0, r.sin(), r.cos(), 0.0],
-                [0.0, 0.0, 0.0, 1.0]
-            ]
+                [0.0, 0.0, 0.0, 1.0],
+            ],
         }
     }
 
@@ -66,8 +64,8 @@ impl Matrix4 {
                 [r.cos(), 0.0, r.sin(), 0.0],
                 [0.0, 1.0, 0.0, 0.0],
                 [-r.sin(), 0.0, r.cos(), 0.0],
-                [0.0, 0.0, 0.0, 1.0]
-            ]
+                [0.0, 0.0, 0.0, 1.0],
+            ],
         }
     }
 
@@ -77,8 +75,8 @@ impl Matrix4 {
                 [r.cos(), -r.sin(), 0.0, 0.0],
                 [r.sin(), r.cos(), 0.0, 0.0],
                 [0.0, 0.0, 1.0, 0.0],
-                [0.0, 0.0, 0.0, 1.0]
-            ]
+                [0.0, 0.0, 0.0, 1.0],
+            ],
         }
     }
 
@@ -88,8 +86,8 @@ impl Matrix4 {
                 [1.0, xy, xz, 0.0],
                 [yx, 1.0, yz, 0.0],
                 [zx, zy, 1.0, 0.0],
-                [0.0, 0.0, 0.0, 1.0]
-            ]
+                [0.0, 0.0, 0.0, 1.0],
+            ],
         }
     }
 
@@ -101,6 +99,7 @@ impl Matrix4 {
         result
     }
 
+    #[allow(clippy::needless_range_loop)]
     pub fn submatrix(&self, row: usize, col: usize) -> Matrix3 {
         let mut data = [[0.0; 3]; 3];
         for i in 0..3 {
@@ -113,6 +112,7 @@ impl Matrix4 {
         Matrix3::new(data)
     }
 
+    #[allow(clippy::needless_range_loop)]
     pub fn inverse(&self) -> Option<Matrix4> {
         if !self.is_invertible() {
             return None;
@@ -238,9 +238,7 @@ pub struct Matrix3 {
 
 impl Matrix3 {
     pub fn new(data: [[f64; 3]; 3]) -> Matrix3 {
-        Matrix3 {
-            data,
-        }
+        Matrix3 { data }
     }
 
     pub fn cofactor(&self, row: usize, col: usize) -> f64 {
@@ -264,6 +262,7 @@ impl Matrix3 {
         result
     }
 
+    #[allow(clippy::needless_range_loop)]
     pub fn submatrix(&self, row: usize, col: usize) -> Matrix2 {
         let mut data = [[0.0; 2]; 2];
         for i in 0..2 {
@@ -303,9 +302,7 @@ pub struct Matrix2 {
 
 impl Matrix2 {
     pub fn new(data: [[f64; 2]; 2]) -> Matrix2 {
-        Matrix2 {
-            data
-        }
+        Matrix2 { data }
     }
 
     pub fn determinant(self) -> f64 {
@@ -371,11 +368,7 @@ mod tests {
 
     #[test]
     fn create_3x3_matrix() {
-        let data = [
-            [-3.0, 5.0, 0.0],
-            [1.0, -2.0, -7.0],
-            [0.0, 1.0, 1.0],
-        ];
+        let data = [[-3.0, 5.0, 0.0], [1.0, -2.0, -7.0], [0.0, 1.0, 1.0]];
         let matrix = Matrix3::new(data);
 
         assert_eq!(matrix.data[0][0], -3.0);
@@ -385,92 +378,76 @@ mod tests {
 
     #[test]
     fn equality_with_identical_matrices() {
-        let matrix_a = Matrix4::new(
-            [
-                [1.0, 2.0, 3.0, 4.0],
-                [5.0, 6.0, 7.0, 8.0],
-                [9.0, 8.0, 7.0, 6.0],
-                [5.0, 4.0, 3.0, 2.0],
-            ]
-        );
+        let matrix_a = Matrix4::new([
+            [1.0, 2.0, 3.0, 4.0],
+            [5.0, 6.0, 7.0, 8.0],
+            [9.0, 8.0, 7.0, 6.0],
+            [5.0, 4.0, 3.0, 2.0],
+        ]);
 
-        let matrix_b = Matrix4::new(
-            [
-                [1.0, 2.0, 3.0, 4.0],
-                [5.0, 6.0, 7.0, 8.0],
-                [9.0, 8.0, 7.0, 6.0],
-                [5.0, 4.0, 3.0, 2.0],
-            ]
-        );
+        let matrix_b = Matrix4::new([
+            [1.0, 2.0, 3.0, 4.0],
+            [5.0, 6.0, 7.0, 8.0],
+            [9.0, 8.0, 7.0, 6.0],
+            [5.0, 4.0, 3.0, 2.0],
+        ]);
 
         assert_eq!(matrix_a, matrix_b);
     }
 
     #[test]
     fn inequality_with_similar_matrices() {
-        let matrix_a = Matrix4::new(
-            [
-                [1.0, 2.0, 3.0, 4.0],
-                [5.0, 6.0, 7.0, 8.0],
-                [9.0, 8.0, 7.0, 6.0],
-                [5.0, 4.0, 3.0, 2.0],
-            ]
-        );
+        let matrix_a = Matrix4::new([
+            [1.0, 2.0, 3.0, 4.0],
+            [5.0, 6.0, 7.0, 8.0],
+            [9.0, 8.0, 7.0, 6.0],
+            [5.0, 4.0, 3.0, 2.0],
+        ]);
 
-        let matrix_b = Matrix4::new(
-            [
-                [1.0, 2.0, 3.0, 4.0],
-                [5.0, 6.0, 7.0, 8.0],
-                [9.0, 8.0, 7.0, 6.0],
-                [5.0, 4.0, 2.0, 2.0],
-            ]
-        );
+        let matrix_b = Matrix4::new([
+            [1.0, 2.0, 3.0, 4.0],
+            [5.0, 6.0, 7.0, 8.0],
+            [9.0, 8.0, 7.0, 6.0],
+            [5.0, 4.0, 2.0, 2.0],
+        ]);
 
         assert_ne!(matrix_a, matrix_b);
     }
 
     #[test]
     fn multiply_two_matrices() {
-        let matrix_a = Matrix4::new(
-            [
-                [1.0, 2.0, 3.0, 4.0],
-                [5.0, 6.0, 7.0, 8.0],
-                [9.0, 8.0, 7.0, 6.0],
-                [5.0, 4.0, 3.0, 2.0],
-            ]
-        );
+        let matrix_a = Matrix4::new([
+            [1.0, 2.0, 3.0, 4.0],
+            [5.0, 6.0, 7.0, 8.0],
+            [9.0, 8.0, 7.0, 6.0],
+            [5.0, 4.0, 3.0, 2.0],
+        ]);
 
-        let matrix_b = Matrix4::new(
-            [
-                [-2.0, 1.0, 2.0, 3.0],
-                [3.0, 2.0, 1.0, -1.0],
-                [4.0, 3.0, 6.0, 5.0],
-                [1.0, 2.0, 7.0, 8.0],
-            ]
-        );
+        let matrix_b = Matrix4::new([
+            [-2.0, 1.0, 2.0, 3.0],
+            [3.0, 2.0, 1.0, -1.0],
+            [4.0, 3.0, 6.0, 5.0],
+            [1.0, 2.0, 7.0, 8.0],
+        ]);
 
-        let expected = Matrix4::new(
-            [
-                [20.0, 22.0, 50.0, 48.0],
-                [44.0, 54.0, 114.0, 108.0],
-                [40.0, 58.0, 110.0, 102.0],
-                [16.0, 26.0, 46.0, 42.0],
-            ]
-        );
+        let expected = Matrix4::new([
+            [20.0, 22.0, 50.0, 48.0],
+            [44.0, 54.0, 114.0, 108.0],
+            [40.0, 58.0, 110.0, 102.0],
+            [16.0, 26.0, 46.0, 42.0],
+        ]);
 
         assert_eq!(matrix_a * matrix_b, expected);
     }
 
     #[test]
     fn multiply_matrix_by_tuple() {
-        let matrix = Matrix4::new(
-            [
-                [1.0, 2.0, 3.0, 4.0],
-                [2.0, 4.0, 4.0, 2.0],
-                [8.0, 6.0, 4.0, 1.0],
-                [0.0, 0.0, 0.0, 1.0],
-            ]
-        );
+        let matrix = Matrix4::new([
+            [1.0, 2.0, 3.0, 4.0],
+            [2.0, 4.0, 4.0, 2.0],
+            [8.0, 6.0, 4.0, 1.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ]);
         let tuple = Point::new(1.0, 2.0, 3.0);
 
         assert_eq!(matrix * tuple, Point::new(18.0, 24.0, 33.0));
@@ -478,14 +455,12 @@ mod tests {
 
     #[test]
     fn multiply_by_identity_matrix() {
-        let matrix = Matrix4::new(
-            [
-                [0.0, 1.0, 2.0, 4.0],
-                [1.0, 2.0, 4.0, 8.0],
-                [2.0, 4.0, 8.0, 16.0],
-                [4.0, 8.0, 16.0, 32.0],
-            ]
-        );
+        let matrix = Matrix4::new([
+            [0.0, 1.0, 2.0, 4.0],
+            [1.0, 2.0, 4.0, 8.0],
+            [2.0, 4.0, 8.0, 16.0],
+            [4.0, 8.0, 16.0, 32.0],
+        ]);
 
         let identity_matrix = Matrix4::identity();
 
@@ -502,23 +477,19 @@ mod tests {
 
     #[test]
     fn transposing_a_matrix() {
-        let matrix = Matrix4::new(
-            [
-                [0.0, 9.0, 3.0, 0.0],
-                [9.0, 8.0, 0.0, 8.0],
-                [1.0, 8.0, 5.0, 3.0],
-                [0.0, 0.0, 5.0, 8.0],
-            ]
-        );
+        let matrix = Matrix4::new([
+            [0.0, 9.0, 3.0, 0.0],
+            [9.0, 8.0, 0.0, 8.0],
+            [1.0, 8.0, 5.0, 3.0],
+            [0.0, 0.0, 5.0, 8.0],
+        ]);
 
-        let expected_matrix = Matrix4::new(
-            [
-                [0.0, 9.0, 1.0, 0.0],
-                [9.0, 8.0, 8.0, 0.0],
-                [3.0, 0.0, 5.0, 5.0],
-                [0.0, 8.0, 3.0, 8.0],
-            ]
-        );
+        let expected_matrix = Matrix4::new([
+            [0.0, 9.0, 1.0, 0.0],
+            [9.0, 8.0, 8.0, 0.0],
+            [3.0, 0.0, 5.0, 5.0],
+            [0.0, 8.0, 3.0, 8.0],
+        ]);
 
         assert_eq!(matrix.transpose(), expected_matrix);
     }
@@ -532,13 +503,7 @@ mod tests {
 
     #[test]
     fn calculate_the_determinant_of_a_3x3_matrix() {
-        let matrix = Matrix3::new(
-            [
-                [1.0, 2.0, 6.0],
-                [-5.0, 8.0, -4.0],
-                [2.0, 6.0, 4.0],
-            ]
-        );
+        let matrix = Matrix3::new([[1.0, 2.0, 6.0], [-5.0, 8.0, -4.0], [2.0, 6.0, 4.0]]);
 
         assert_eq!(matrix.cofactor(0, 0), 56.0);
         assert_eq!(matrix.cofactor(0, 1), 12.0);
@@ -564,11 +529,7 @@ mod tests {
 
     #[test]
     fn get_2x2_submatrix_from_3x3_matrix() {
-        let matrix = Matrix3::new([
-            [1.0, 5.0, 0.0],
-            [-3.0, 2.0, 7.0],
-            [0.0, 6.0, -3.0],
-        ]);
+        let matrix = Matrix3::new([[1.0, 5.0, 0.0], [-3.0, 2.0, 7.0], [0.0, 6.0, -3.0]]);
 
         let expected_matrix = Matrix2::new([[-3.0, 2.0], [0.0, 6.0]]);
 
@@ -584,33 +545,21 @@ mod tests {
             [-7.0, 1.0, -1.0, 1.0],
         ]);
 
-        let expected_matrix = Matrix3::new([
-            [-6.0, 1.0, 6.0],
-            [-8.0, 8.0, 6.0],
-            [-7.0, -1.0, 1.0],
-        ]);
+        let expected_matrix = Matrix3::new([[-6.0, 1.0, 6.0], [-8.0, 8.0, 6.0], [-7.0, -1.0, 1.0]]);
 
         assert_eq!(matrix.submatrix(2, 1), expected_matrix);
     }
 
     #[test]
     fn calculate_minor_of_3x3_matrix() {
-        let matrix = Matrix3::new([
-            [3.0, 5.0, 0.0],
-            [2.0, -1.0, -7.0],
-            [6.0, -1.0, 5.0],
-        ]);
+        let matrix = Matrix3::new([[3.0, 5.0, 0.0], [2.0, -1.0, -7.0], [6.0, -1.0, 5.0]]);
 
         assert_eq!(matrix.minor(1, 0), 25.0);
     }
 
     #[test]
     fn calculate_cofactor_of_3x3_matrix() {
-        let matrix = Matrix3::new([
-            [3.0, 5.0, 0.0],
-            [2.0, -1.0, -7.0],
-            [6.0, -1.0, 5.0],
-        ]);
+        let matrix = Matrix3::new([[3.0, 5.0, 0.0], [2.0, -1.0, -7.0], [6.0, -1.0, 5.0]]);
 
         assert_eq!(matrix.minor(0, 0), -12.0);
         assert_eq!(matrix.cofactor(0, 0), -12.0);

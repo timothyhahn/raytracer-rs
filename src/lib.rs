@@ -1,5 +1,6 @@
 pub mod camera;
 pub mod canvas;
+pub mod color;
 pub mod fire_projectiles;
 pub mod floats;
 pub mod intersections;
@@ -12,4 +13,3 @@ pub mod sphere;
 pub mod transformations;
 pub mod tuples;
 pub mod world;
-pub mod color;

@@ -32,7 +32,7 @@ impl Camera {
             transform: Matrix4::identity(),
             pixel_size: (half_width * 2.0) / hsize as f64,
             half_width,
-            half_height
+            half_height,
         }
     }
 
@@ -43,7 +43,7 @@ impl Camera {
         let world_x = self.half_width - x_offset;
         let world_y = self.half_height - y_offset;
 
-        let pixel  = self.transform.inverse().unwrap() * Point::new(world_x, world_y, -1.0);
+        let pixel = self.transform.inverse().unwrap() * Point::new(world_x, world_y, -1.0);
         let origin = self.transform.inverse().unwrap() * Point::new(0.0, 0.0, 0.0);
         let direction = (pixel - origin).normalize();
         Ray::new(origin, direction)
@@ -67,14 +67,14 @@ impl Camera {
 
 #[cfg(test)]
 mod tests {
-    use std::f64::consts::PI;
     use crate::camera::Camera;
+    use crate::color::Color;
     use crate::floats::float_equal;
     use crate::matrices::Matrix4;
     use crate::transformations::view_transform;
-    use crate::color::Color;
     use crate::tuples::{Point, Tuple, Vector};
     use crate::world::World;
+    use std::f64::consts::PI;
 
     #[test]
     fn constructing_camera() {
@@ -113,7 +113,10 @@ mod tests {
         let camera = Camera::new(201, 101, PI / 2.0);
         let ray = camera.ray_for_pixel(0, 0);
         assert_eq!(ray.origin, Point::new(0.0, 0.0, 0.0));
-        assert_eq!(ray.direction, Vector::new(0.6651864261194508, 0.3325932130597254, -0.6685123582500481));
+        assert_eq!(
+            ray.direction,
+            Vector::new(0.6651864261194508, 0.3325932130597254, -0.6685123582500481)
+        );
     }
 
     #[test]
@@ -122,7 +125,10 @@ mod tests {
         camera.transform = Matrix4::rotate_y(PI / 4.0) * Matrix4::translate(0.0, -2.0, 5.0);
         let ray = camera.ray_for_pixel(100, 50);
         assert_eq!(ray.origin, Point::new(0.0, 2.0, -5.0));
-        assert_eq!(ray.direction, Vector::new(2.0_f64.sqrt() / 2.0, 0.0, -(2.0_f64.sqrt() / 2.0)));
+        assert_eq!(
+            ray.direction,
+            Vector::new(2.0_f64.sqrt() / 2.0, 0.0, -(2.0_f64.sqrt() / 2.0))
+        );
     }
 
     #[test]

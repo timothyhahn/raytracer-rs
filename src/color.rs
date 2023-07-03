@@ -1,5 +1,5 @@
-use std::ops::{Add, Mul, Sub};
 use crate::floats::float_equal;
+use std::ops::{Add, Mul, Sub};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Color {
@@ -29,7 +29,8 @@ impl Add for Color {
         Color::new(
             self.red + other.red,
             self.green + other.green,
-            self.blue + other.blue)
+            self.blue + other.blue,
+        )
     }
 }
 
@@ -40,17 +41,15 @@ impl Sub for Color {
         Color::new(
             self.red - other.red,
             self.green - other.green,
-            self.blue - other.blue)
+            self.blue - other.blue,
+        )
     }
 }
 
 impl Mul<f64> for Color {
     type Output = Self;
     fn mul(self, scalar: f64) -> Self::Output {
-        Color::new(
-            self.red * scalar,
-            self.green * scalar,
-            self.blue * scalar,)
+        Color::new(self.red * scalar, self.green * scalar, self.blue * scalar)
     }
 }
 
@@ -69,9 +68,9 @@ impl Mul<Color> for Color {
 
 impl PartialEq for Color {
     fn eq(&self, other: &Self) -> bool {
-        float_equal(self.red, other.red) &&
-            float_equal(self.green, other.green) &&
-            float_equal(self.blue, other.blue)
+        float_equal(self.red, other.red)
+            && float_equal(self.green, other.green)
+            && float_equal(self.blue, other.blue)
     }
 }
 

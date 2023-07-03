@@ -9,14 +9,14 @@ use crate::tuples::{Point, Tuple};
 
 pub struct World {
     pub objects: Vec<Sphere>,
-    pub light_source: Option<PointLight>
+    pub light_source: Option<PointLight>,
 }
 
 impl World {
     pub fn new() -> World {
         World {
             objects: Vec::new(),
-            light_source: None
+            light_source: None,
         }
     }
 
@@ -46,8 +46,8 @@ impl World {
             Some(hit) => {
                 let comps = hit.prepare_computations(ray);
                 self.shade_hit(comps)
-            },
-            None => Color::black()
+            }
+            None => Color::black(),
         }
     }
 }
@@ -62,7 +62,8 @@ impl Default for World {
         };
         let sphere1 = Sphere {
             material,
-            ..Default::default() };
+            ..Default::default()
+        };
         let sphere2 = Sphere {
             transformation: Matrix4::scale(0.5, 0.5, 0.5),
             ..Default::default()
@@ -72,7 +73,10 @@ impl Default for World {
 
         World {
             objects,
-            light_source: Some(PointLight::new(Point::new(-10.0, 10.0, -10.0), Color::new(1.0, 1.0, 1.0))),
+            light_source: Some(PointLight::new(
+                Point::new(-10.0, 10.0, -10.0),
+                Color::new(1.0, 1.0, 1.0),
+            )),
         }
     }
 }
@@ -126,7 +130,10 @@ mod tests {
     #[test]
     fn shading_intersection_from_inside() {
         let world = World {
-            light_source: Some(PointLight::new(Point::new(0.0, 0.25, 0.0), Color::new(1.0, 1.0, 1.0))),
+            light_source: Some(PointLight::new(
+                Point::new(0.0, 0.25, 0.0),
+                Color::new(1.0, 1.0, 1.0),
+            )),
             ..Default::default()
         };
         let ray = Ray::new(Point::new(0.0, 0.0, 0.0), Vector::new(0.0, 0.0, 1.0));

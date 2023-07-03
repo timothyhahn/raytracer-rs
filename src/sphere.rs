@@ -235,11 +235,7 @@ mod tests {
         sphere.set_transform(
             Matrix4::scale(1.0, 0.5, 1.0) * Matrix4::rotate_z(std::f64::consts::PI / 5.0),
         );
-        let normal = sphere.normal_at(Point::new(
-            0.0,
-            2.0_f64.sqrt() / 2.0,
-            -2.0_f64.sqrt() / 2.0,
-        ));
+        let normal = sphere.normal_at(Point::new(0.0, 2.0_f64.sqrt() / 2.0, -2.0_f64.sqrt() / 2.0));
         assert_eq!(normal, Vector::new(0.0, 0.97014, -0.24254));
     }
 
