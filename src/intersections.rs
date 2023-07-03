@@ -1,6 +1,6 @@
 use crate::rays::Ray;
 use crate::sphere::Sphere;
-use crate::tuples::Tuple;
+use crate::tuples::{Point, Vector};
 
 #[derive(Debug, Copy, Clone)]
 pub struct Intersection<'a> {
@@ -11,9 +11,9 @@ pub struct Intersection<'a> {
 pub struct Computations {
     pub time: f64,
     pub object: Sphere,
-    pub point: Tuple,
-    pub eye_vector: Tuple,
-    pub normal_vector: Tuple,
+    pub point: Point,
+    pub eye_vector: Vector,
+    pub normal_vector: Vector,
     pub inside: bool,
 }
 
@@ -57,7 +57,7 @@ mod tests {
     use crate::intersections::Intersection;
     use crate::rays::Ray;
     use crate::sphere::Sphere;
-    use crate::tuples::Tuple;
+    use crate::tuples::{Point, Tuple, Vector};
 
     #[test]
     fn an_intersection_encapsulates_time_and_object() {
@@ -127,19 +127,19 @@ mod tests {
 
     #[test]
     fn precomputing_state_of_intersection() {
-        let ray = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(0.0, 0.0, 1.0));
+        let ray = Ray::new(Point::new(0.0, 0.0, -5.0), Vector::new(0.0, 0.0, 1.0));
         let shape = Sphere::new();
         let intersection = Intersection::new(4.0, &shape);
         let computations = intersection.prepare_computations(ray);
         assert_eq!(computations.time, intersection.time);
         assert_eq!(computations.object, intersection.object.clone());
-        assert_eq!(computations.point, Tuple::point(0.0, 0.0, -1.0));
-        assert_eq!(computations.eye_vector, Tuple::vector(0.0, 0.0, -1.0));
+        assert_eq!(computations.point, Point::new(0.0, 0.0, -1.0));
+        assert_eq!(computations.eye_vector, Vector::new(0.0, 0.0, -1.0));
     }
 
     #[test]
     fn precompute_hit_when_intersection_occurs_on_outside() {
-        let ray = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(0.0, 0.0, 1.0));
+        let ray = Ray::new(Point::new(0.0, 0.0, -5.0), Vector::new(0.0, 0.0, 1.0));
         let shape = Sphere::new();
         let intersection = Intersection::new(4.0, &shape);
         let computations = intersection.prepare_computations(ray);
@@ -148,13 +148,13 @@ mod tests {
 
     #[test]
     fn precompute_hit_when_intersection_occurs_on_inside() {
-        let ray = Ray::new(Tuple::point(0.0, 0.0, 0.0), Tuple::vector(0.0, 0.0, 1.0));
+        let ray = Ray::new(Point::new(0.0, 0.0, 0.0), Vector::new(0.0, 0.0, 1.0));
         let shape = Sphere::new();
         let intersection = Intersection::new(1.0, &shape);
         let computations = intersection.prepare_computations(ray);
-        assert_eq!(computations.point, Tuple::point(0.0, 0.0, 1.0));
-        assert_eq!(computations.eye_vector, Tuple::vector(0.0, 0.0, -1.0));
+        assert_eq!(computations.point, Point::new(0.0, 0.0, 1.0));
+        assert_eq!(computations.eye_vector, Vector::new(0.0, 0.0, -1.0));
         assert!(computations.inside);
-        assert_eq!(computations.normal_vector, Tuple::vector(0.0, 0.0, -1.0));
+        assert_eq!(computations.normal_vector, Vector::new(0.0, 0.0, -1.0));
     }
 }

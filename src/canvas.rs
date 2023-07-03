@@ -1,7 +1,7 @@
-use crate::tuples::Color;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
+use crate::color::Color;
 
 pub struct Canvas {
     pub width: u32,

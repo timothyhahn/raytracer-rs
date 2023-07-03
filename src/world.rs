@@ -1,10 +1,11 @@
+use crate::color::Color;
 use crate::intersections::{Computations, Intersection};
 use crate::lights::PointLight;
 use crate::materials::Material;
-use crate::matrices::Matrix;
+use crate::matrices::Matrix4;
 use crate::rays::Ray;
 use crate::sphere::Sphere;
-use crate::tuples::{Color, Tuple};
+use crate::tuples::{Point, Tuple};
 
 pub struct World {
     pub objects: Vec<Sphere>,
@@ -63,7 +64,7 @@ impl Default for World {
             material,
             ..Default::default() };
         let sphere2 = Sphere {
-            transformation: Matrix::scaling(0.5, 0.5, 0.5),
+            transformation: Matrix4::scale(0.5, 0.5, 0.5),
             ..Default::default()
         };
 
@@ -71,17 +72,18 @@ impl Default for World {
 
         World {
             objects,
-            light_source: Some(PointLight::new(Tuple::point(-10.0, 10.0, -10.0), Color::new(1.0, 1.0, 1.0))),
+            light_source: Some(PointLight::new(Point::new(-10.0, 10.0, -10.0), Color::new(1.0, 1.0, 1.0))),
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::color::Color;
     use crate::intersections::Intersection;
     use crate::lights::PointLight;
     use crate::rays::Ray;
-    use crate::tuples::{Color, Tuple};
+    use crate::tuples::{Point, Tuple, Vector};
     use crate::world::World;
 
     #[test]
@@ -101,7 +103,7 @@ mod tests {
     #[test]
     fn intersect_world_with_ray() {
         let world = World::default();
-        let ray = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(0.0, 0.0, 1.0));
+        let ray = Ray::new(Point::new(0.0, 0.0, -5.0), Vector::new(0.0, 0.0, 1.0));
         let intersections = world.intersect(ray);
         assert_eq!(intersections.len(), 4);
         assert_eq!(intersections[0].time, 4.0);
@@ -113,7 +115,7 @@ mod tests {
     #[test]
     fn shading_intersection() {
         let world = World::default();
-        let ray = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(0.0, 0.0, 1.0));
+        let ray = Ray::new(Point::new(0.0, 0.0, -5.0), Vector::new(0.0, 0.0, 1.0));
         let shape = &world.objects[0];
         let intersection = shape.intersect(ray)[0];
         let computations = intersection.prepare_computations(ray);
@@ -124,10 +126,10 @@ mod tests {
     #[test]
     fn shading_intersection_from_inside() {
         let world = World {
-            light_source: Some(PointLight::new(Tuple::point(0.0, 0.25, 0.0), Color::new(1.0, 1.0, 1.0))),
+            light_source: Some(PointLight::new(Point::new(0.0, 0.25, 0.0), Color::new(1.0, 1.0, 1.0))),
             ..Default::default()
         };
-        let ray = Ray::new(Tuple::point(0.0, 0.0, 0.0), Tuple::vector(0.0, 0.0, 1.0));
+        let ray = Ray::new(Point::new(0.0, 0.0, 0.0), Vector::new(0.0, 0.0, 1.0));
         let shape = &world.objects[1];
         let intersection = Intersection::new(0.5, shape);
         let computations = intersection.prepare_computations(ray);
@@ -138,7 +140,7 @@ mod tests {
     #[test]
     fn color_when_ray_misses() {
         let world = World::default();
-        let ray = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(0.0, 1.0, 0.0));
+        let ray = Ray::new(Point::new(0.0, 0.0, -5.0), Vector::new(0.0, 1.0, 0.0));
         let color = world.color_at(ray);
         assert_eq!(color, Color::new(0.0, 0.0, 0.0));
     }
@@ -146,7 +148,7 @@ mod tests {
     #[test]
     fn color_when_ray_hits() {
         let world = World::default();
-        let ray = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(0.0, 0.0, 1.0));
+        let ray = Ray::new(Point::new(0.0, 0.0, -5.0), Vector::new(0.0, 0.0, 1.0));
         let color = world.color_at(ray);
         assert_eq!(color, Color::new(0.38066, 0.47583, 0.2855));
     }
@@ -162,7 +164,7 @@ mod tests {
             objects,
             ..Default::default()
         };
-        let ray = Ray::new(Tuple::point(0.0, 0.0, 0.75), Tuple::vector(0.0, 0.0, -1.0));
+        let ray = Ray::new(Point::new(0.0, 0.0, 0.75), Vector::new(0.0, 0.0, -1.0));
         let color = world.color_at(ray);
         assert_eq!(color, inner.material.color);
     }

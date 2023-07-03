@@ -1,15 +1,15 @@
 use crate::canvas::Canvas;
-use crate::matrices::Matrix;
+use crate::matrices::Matrix4;
 use crate::rays::Ray;
-use crate::tuples::Tuple;
+use crate::tuples::{Point, Tuple};
 use crate::world::World;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct Camera {
     pub hsize: u32,
     pub vsize: u32,
     pub field_of_view: f64,
-    pub transform: Matrix,
+    pub transform: Matrix4,
     pub pixel_size: f64,
     pub half_width: f64,
     pub half_height: f64,
@@ -29,7 +29,7 @@ impl Camera {
             hsize,
             vsize,
             field_of_view,
-            transform: Matrix::identity(4),
+            transform: Matrix4::identity(),
             pixel_size: (half_width * 2.0) / hsize as f64,
             half_width,
             half_height
@@ -43,8 +43,8 @@ impl Camera {
         let world_x = self.half_width - x_offset;
         let world_y = self.half_height - y_offset;
 
-        let pixel  = self.transform.inverse().unwrap() * Tuple::point(world_x, world_y, -1.0);
-        let origin = self.transform.inverse().unwrap() * Tuple::point(0.0, 0.0, 0.0);
+        let pixel  = self.transform.inverse().unwrap() * Point::new(world_x, world_y, -1.0);
+        let origin = self.transform.inverse().unwrap() * Point::new(0.0, 0.0, 0.0);
         let direction = (pixel - origin).normalize();
         Ray::new(origin, direction)
     }
@@ -55,7 +55,7 @@ impl Camera {
             for x in 0..self.hsize {
                 // This clone makes me sad.
                 // I think it would be fixed if we just made matrices no bigger than 4x4.
-                let ray = self.clone().ray_for_pixel(x as usize, y as usize);
+                let ray = self.ray_for_pixel(x as usize, y as usize);
                 let color = world.color_at(ray);
                 image.write_pixel(x, y, &color);
             }
@@ -70,9 +70,10 @@ mod tests {
     use std::f64::consts::PI;
     use crate::camera::Camera;
     use crate::floats::float_equal;
-    use crate::matrices::Matrix;
+    use crate::matrices::Matrix4;
     use crate::transformations::view_transform;
-    use crate::tuples::{Color, Tuple};
+    use crate::color::Color;
+    use crate::tuples::{Point, Tuple, Vector};
     use crate::world::World;
 
     #[test]
@@ -84,7 +85,7 @@ mod tests {
         assert_eq!(camera.hsize, 160);
         assert_eq!(camera.vsize, 120);
         assert_eq!(camera.field_of_view, PI / 2.0);
-        assert_eq!(camera.transform, Matrix::identity(4));
+        assert_eq!(camera.transform, Matrix4::identity());
     }
 
     #[test]
@@ -103,34 +104,34 @@ mod tests {
     fn constructing_ray_through_center_of_canvas() {
         let camera = Camera::new(201, 101, PI / 2.0);
         let ray = camera.ray_for_pixel(100, 50);
-        assert_eq!(ray.origin, Tuple::point(0.0, 0.0, 0.0));
-        assert_eq!(ray.direction, Tuple::vector(0.0, 0.0, -1.0));
+        assert_eq!(ray.origin, Point::new(0.0, 0.0, 0.0));
+        assert_eq!(ray.direction, Vector::new(0.0, 0.0, -1.0));
     }
 
     #[test]
     fn constructing_ray_through_corner_of_canvas() {
         let camera = Camera::new(201, 101, PI / 2.0);
         let ray = camera.ray_for_pixel(0, 0);
-        assert_eq!(ray.origin, Tuple::point(0.0, 0.0, 0.0));
-        assert_eq!(ray.direction, Tuple::vector( 0.6651864261194508, 0.3325932130597254, -0.6685123582500481));
+        assert_eq!(ray.origin, Point::new(0.0, 0.0, 0.0));
+        assert_eq!(ray.direction, Vector::new(0.6651864261194508, 0.3325932130597254, -0.6685123582500481));
     }
 
     #[test]
     fn constructing_ray_when_camera_transformed() {
         let mut camera = Camera::new(201, 101, PI / 2.0);
-        camera.transform = Matrix::rotation_y(PI / 4.0) * Matrix::translation(0.0, -2.0, 5.0);
+        camera.transform = Matrix4::rotate_y(PI / 4.0) * Matrix4::translate(0.0, -2.0, 5.0);
         let ray = camera.ray_for_pixel(100, 50);
-        assert_eq!(ray.origin, Tuple::point(0.0, 2.0, -5.0));
-        assert_eq!(ray.direction, Tuple::vector(2.0_f64.sqrt() / 2.0, 0.0, -(2.0_f64.sqrt() / 2.0)));
+        assert_eq!(ray.origin, Point::new(0.0, 2.0, -5.0));
+        assert_eq!(ray.direction, Vector::new(2.0_f64.sqrt() / 2.0, 0.0, -(2.0_f64.sqrt() / 2.0)));
     }
 
     #[test]
     fn rendering_world_with_camera() {
         let world = World::default();
         let mut camera = Camera::new(11, 11, PI / 2.0);
-        let from = Tuple::point(0.0, 0.0, -5.0);
-        let to = Tuple::point(0.0, 0.0, 0.0);
-        let up = Tuple::vector(0.0, 1.0, 0.0);
+        let from = Point::new(0.0, 0.0, -5.0);
+        let to = Point::new(0.0, 0.0, 0.0);
+        let up = Vector::new(0.0, 1.0, 0.0);
         camera.transform = view_transform(from, to, up);
 
         let image = camera.render(world);

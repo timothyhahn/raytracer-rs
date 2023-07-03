@@ -1,13 +1,13 @@
-use crate::tuples::Tuple;
+use crate::tuples::{Point, Vector};
 
 pub struct Projectile {
-    pub position: Tuple,
-    pub velocity: Tuple,
+    pub position: Point,
+    pub velocity: Vector,
 }
 
 pub struct Environment {
-    pub gravity: Tuple,
-    pub wind: Tuple,
+    pub gravity: Vector,
+    pub wind: Vector,
 }
 
 pub fn tick(env: &Environment, proj: Projectile) -> Projectile {
@@ -19,18 +19,18 @@ pub fn tick(env: &Environment, proj: Projectile) -> Projectile {
 #[cfg(test)]
 mod tests {
     use crate::fire_projectiles::{tick, Environment, Projectile};
-    use crate::tuples::Tuple;
+    use crate::tuples::{Point, Tuple, Vector};
 
     #[test]
     fn ticking_projectile() {
         let mut p = Projectile {
-            position: Tuple::point(0.0, 1.0, 0.0),
-            velocity: Tuple::vector(1.0, 1.0, 0.0).normalize(),
+            position: Point::new(0.0, 1.0, 0.0),
+            velocity: Vector::new(1.0, 1.0, 0.0).normalize(),
         };
 
         let e = Environment {
-            gravity: Tuple::vector(0.0, -0.1, 0.0),
-            wind: Tuple::vector(-0.01, 0.0, 0.0),
+            gravity: Vector::new(0.0, -0.1, 0.0),
+            wind: Vector::new(-0.01, 0.0, 0.0),
         };
 
         let mut count_iterations = 0;

@@ -12,3 +12,4 @@ pub mod sphere;
 pub mod transformations;
 pub mod tuples;
 pub mod world;
+pub mod color;
