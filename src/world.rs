@@ -3,12 +3,13 @@ use crate::intersections::{Computations, Intersection};
 use crate::lights::PointLight;
 use crate::materials::Material;
 use crate::matrices::Matrix4;
+use crate::objects::{Intersectable, Object};
 use crate::rays::Ray;
 use crate::sphere::Sphere;
 use crate::tuples::{Point, Tuple};
 
 pub struct World {
-    pub objects: Vec<Sphere>,
+    pub objects: Vec<Object>,
     pub light_source: Option<PointLight>,
 }
 
@@ -24,14 +25,19 @@ impl World {
         let mut intersections: Vec<Intersection> = Vec::new();
         for object in self.objects.iter() {
             let object_intersections = object.intersect(ray);
-            intersections.extend(object_intersections);
+            for intersection in object_intersections {
+                intersections.push(Intersection {
+                    object,
+                    t: intersection,
+                });
+            }
         }
-        intersections.sort_by(|a, b| a.time.partial_cmp(&b.time).unwrap());
+        intersections.sort_by(|a, b| a.t.partial_cmp(&b.t).unwrap());
         intersections
     }
 
     pub fn shade_hit(&self, comps: Computations) -> Color {
-        comps.object.material.lighting(
+        comps.object.material().lighting(
             self.light_source.unwrap(),
             comps.point,
             comps.eye_vector,
@@ -69,7 +75,7 @@ impl Default for World {
             ..Default::default()
         };
 
-        let objects: Vec<Sphere> = Vec::from([sphere1, sphere2]);
+        let objects: Vec<Object> = Vec::from([Object::Sphere(sphere1), Object::Sphere(sphere2)]);
 
         World {
             objects,
@@ -86,6 +92,8 @@ mod tests {
     use crate::color::Color;
     use crate::intersections::Intersection;
     use crate::lights::PointLight;
+    use crate::materials::Material;
+    use crate::objects::Intersectable;
     use crate::rays::Ray;
     use crate::tuples::{Point, Tuple, Vector};
     use crate::world::World;
@@ -110,10 +118,10 @@ mod tests {
         let ray = Ray::new(Point::new(0.0, 0.0, -5.0), Vector::new(0.0, 0.0, 1.0));
         let intersections = world.intersect(ray);
         assert_eq!(intersections.len(), 4);
-        assert_eq!(intersections[0].time, 4.0);
-        assert_eq!(intersections[1].time, 4.5);
-        assert_eq!(intersections[2].time, 5.5);
-        assert_eq!(intersections[3].time, 6.0);
+        assert_eq!(intersections[0].t, 4.0);
+        assert_eq!(intersections[1].t, 4.5);
+        assert_eq!(intersections[2].t, 5.5);
+        assert_eq!(intersections[3].t, 6.0);
     }
 
     #[test]
@@ -121,7 +129,10 @@ mod tests {
         let world = World::default();
         let ray = Ray::new(Point::new(0.0, 0.0, -5.0), Vector::new(0.0, 0.0, 1.0));
         let shape = &world.objects[0];
-        let intersection = shape.intersect(ray)[0];
+        let intersection = Intersection {
+            object: shape,
+            t: shape.intersect(ray)[0],
+        };
         let computations = intersection.prepare_computations(ray);
         let color = world.shade_hit(computations);
         assert_eq!(color, Color::new(0.38066, 0.47583, 0.2855));
@@ -163,16 +174,25 @@ mod tests {
     #[test]
     fn color_with_intersection_behind_ray() {
         let world = World::default();
-        let mut objects = world.objects.clone();
-        objects[0].material.ambient = 1.0;
-        objects[1].material.ambient = 1.0;
-        let inner = objects[1].clone();
+        let mut objects = world.objects;
+
+        let outer_material = objects[0].clone().material();
+        objects[0].set_material(Material {
+            ambient: 1.0,
+            ..outer_material
+        });
+
+        let inner_material = objects[1].clone().material();
+        objects[1].set_material(Material {
+            ambient: 1.0,
+            ..inner_material
+        });
         let world = World {
             objects,
             ..Default::default()
         };
         let ray = Ray::new(Point::new(0.0, 0.0, 0.75), Vector::new(0.0, 0.0, -1.0));
         let color = world.color_at(ray);
-        assert_eq!(color, inner.material.color);
+        assert_eq!(color, inner_material.color);
     }
 }

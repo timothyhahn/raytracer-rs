@@ -4,7 +4,7 @@ use crate::matrices::Matrix4;
 use crate::rays::Ray;
 use crate::tuples::{Point, Tuple, Vector};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Sphere {
     pub transformation: Matrix4,
     pub material: Material,
@@ -21,7 +21,7 @@ impl Sphere {
     }
 
     // Returns list of time values where the ray intersects the sphere
-    pub fn intersect(&self, ray: Ray) -> Vec<Intersection> {
+    pub fn intersect(&self, ray: Ray) -> Vec<f64> {
         let ray = ray.transform(self.transformation.inverse().unwrap());
         let sphere_to_ray = ray.origin - self.center;
         let a = ray.direction.dot(&ray.direction);
@@ -34,10 +34,7 @@ impl Sphere {
 
         let t1 = (-b - discriminant.sqrt()) / (2.0 * a);
         let t2 = (-b + discriminant.sqrt()) / (2.0 * a);
-        Intersection::intersections(vec![
-            Intersection::new(t1, self),
-            Intersection::new(t2, self),
-        ])
+        Intersection::sort_intersections(vec![t1, t2])
     }
 
     pub fn normal_at(&self, point: Point) -> Vector {
@@ -69,6 +66,7 @@ mod tests {
     use crate::color::Color;
     use crate::materials::Material;
     use crate::matrices::Matrix4;
+    use crate::objects::{Intersectable, Object};
     use crate::rays::Ray;
     use crate::sphere::Sphere;
     use crate::tuples::{Point, Tuple, Vector};
@@ -99,8 +97,8 @@ mod tests {
         let sphere = Sphere::new();
         let intersections = sphere.intersect(ray);
         assert_eq!(intersections.len(), 2);
-        assert_eq!(intersections[0].time, 4.0);
-        assert_eq!(intersections[1].time, 6.0);
+        assert_eq!(intersections[0], 4.0);
+        assert_eq!(intersections[1], 6.0);
     }
 
     #[test]
@@ -109,8 +107,8 @@ mod tests {
         let sphere = Sphere::new();
         let intersections = sphere.intersect(ray);
         assert_eq!(intersections.len(), 2);
-        assert_eq!(intersections[0].time, 5.0);
-        assert_eq!(intersections[1].time, 5.0);
+        assert_eq!(intersections[0], 5.0);
+        assert_eq!(intersections[1], 5.0);
     }
 
     #[test]
@@ -127,8 +125,8 @@ mod tests {
         let sphere = Sphere::new();
         let intersections = sphere.intersect(ray);
         assert_eq!(intersections.len(), 2);
-        assert_eq!(intersections[0].time, -1.0);
-        assert_eq!(intersections[1].time, 1.0);
+        assert_eq!(intersections[0], -1.0);
+        assert_eq!(intersections[1], 1.0);
     }
 
     #[test]
@@ -137,29 +135,27 @@ mod tests {
         let sphere = Sphere::new();
         let intersections = sphere.intersect(ray);
         assert_eq!(intersections.len(), 2);
-        assert_eq!(intersections[0].time, -6.0);
-        assert_eq!(intersections[1].time, -4.0);
+        assert_eq!(intersections[0], -6.0);
+        assert_eq!(intersections[1], -4.0);
     }
 
     #[test]
     fn intersect_sets_the_object_on_the_intersection() {
         let ray = Ray::new(Point::new(0.0, 0.0, -5.0), Vector::new(0.0, 0.0, 1.0));
-        let sphere = Sphere::new();
+        let sphere = Object::Sphere(Sphere::new());
         let intersections = sphere.intersect(ray);
         assert_eq!(intersections.len(), 2);
-        assert_eq!(*intersections[0].object, sphere);
-        assert_eq!(*intersections[1].object, sphere);
     }
 
     #[test]
     fn intersecting_scaled_sphere_with_ray() {
         let ray = Ray::new(Point::new(0.0, 0.0, -5.0), Vector::new(0.0, 0.0, 1.0));
-        let mut sphere = Sphere::new();
+        let mut sphere = Object::Sphere(Sphere::new());
         sphere.set_transform(Matrix4::scale(2.0, 2.0, 2.0));
         let intersections = sphere.intersect(ray);
         assert_eq!(intersections.len(), 2);
-        assert_eq!(intersections[0].time, 3.0);
-        assert_eq!(intersections[1].time, 7.0);
+        assert_eq!(intersections[0], 3.0);
+        assert_eq!(intersections[1], 7.0);
     }
 
     #[test]

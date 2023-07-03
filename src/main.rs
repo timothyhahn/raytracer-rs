@@ -6,6 +6,7 @@ use raytracer::intersections::Intersection;
 use raytracer::lights::PointLight;
 use raytracer::materials::Material;
 use raytracer::matrices::Matrix4;
+use raytracer::objects::{Intersectable, Object};
 use raytracer::rays::Ray;
 use raytracer::sphere::Sphere;
 use raytracer::transformations::view_transform;
@@ -83,14 +84,14 @@ fn draw_chapter_5_circle() {
     let half = wall_size / 2.0;
     let mut canvas = Canvas::new(canvas_width, canvas_height);
     let color = Color::new(1.0, 0.0, 0.0);
-    let sphere = Sphere::new();
+    let sphere = Object::Sphere(Sphere::new());
     for y in 0..canvas_height - 1 {
         let world_y = half - pixel_size * (y as f64);
         for x in 0..canvas_width - 1 {
             let world_x = -half + pixel_size * (x as f64);
             let position = Point::new(world_x, world_y, wall_z);
             let r = Ray::new(ray_origin, (position - ray_origin).normalize());
-            let intersections = sphere.intersect(r);
+            let intersections: Vec<Intersection> = sphere.intersect_with_object(r);
             if Intersection::hit(intersections).is_some() {
                 canvas.write_pixel(x, y, &color);
             }
@@ -110,7 +111,7 @@ fn draw_chapter_6_sphere() {
     let pixel_size = wall_size / (canvas_width as f64);
     let half = wall_size / 2.0;
     let mut canvas = Canvas::new(canvas_width, canvas_height);
-    let mut sphere = Sphere::new();
+    let mut sphere = Object::Sphere(Sphere::new());
     let material = Material {
         color: Color::new(1.0, 0.2, 1.0),
         ..Default::default()
@@ -126,12 +127,12 @@ fn draw_chapter_6_sphere() {
             let world_x = -half + pixel_size * (x as f64);
             let position = Point::new(world_x, world_y, wall_z);
             let r = Ray::new(ray_origin, (position - ray_origin).normalize());
-            let intersections = sphere.intersect(r);
+            let intersections = sphere.intersect_with_object(r);
             if let Some(hit) = Intersection::hit(intersections) {
-                let point = r.position(hit.time);
+                let point = r.position(hit.t);
                 let normal = hit.object.normal_at(point);
                 let eye = -r.direction;
-                let color = hit.object.material.lighting(light, point, eye, normal);
+                let color = hit.object.material().lighting(light, point, eye, normal);
                 canvas.write_pixel(x, y, &color);
             }
         }
@@ -148,29 +149,29 @@ fn draw_chapter_7_world() {
         ..Default::default()
     };
 
-    let floor = Sphere {
+    let floor = Object::Sphere(Sphere {
         transformation: Matrix4::scale(10.0, 0.01, 10.0),
         material: floor_material,
         ..Default::default()
-    };
+    });
 
-    let left_wall = Sphere {
+    let left_wall = Object::Sphere(Sphere {
         material: floor_material,
         transformation: Matrix4::translate(0.0, 0.0, 5.0)
             * Matrix4::rotate_y(-PI / 4.0)
             * Matrix4::rotate_x(PI / 2.0)
             * Matrix4::scale(10.0, 0.01, 10.0),
         ..Default::default()
-    };
+    });
 
-    let right_wall = Sphere {
+    let right_wall = Object::Sphere(Sphere {
         material: floor_material,
         transformation: Matrix4::translate(0.0, 0.0, 5.0)
             * Matrix4::rotate_y(PI / 4.0)
             * Matrix4::rotate_x(PI / 2.0)
             * Matrix4::scale(10.0, 0.01, 10.0),
         ..Default::default()
-    };
+    });
 
     let middle_material = Material {
         color: Color::new(0.1, 1.0, 0.5),
@@ -179,11 +180,11 @@ fn draw_chapter_7_world() {
         ..Default::default()
     };
 
-    let middle = Sphere {
+    let middle = Object::Sphere(Sphere {
         material: middle_material,
         transformation: Matrix4::translate(-0.5, 1.0, 0.5),
         ..Default::default()
-    };
+    });
 
     let right_material = Material {
         color: Color::new(0.5, 1.0, 0.1),
@@ -192,11 +193,11 @@ fn draw_chapter_7_world() {
         ..Default::default()
     };
 
-    let right = Sphere {
+    let right = Object::Sphere(Sphere {
         material: right_material,
         transformation: Matrix4::translate(1.5, 0.5, -0.5) * Matrix4::scale(0.5, 0.5, 0.5),
         ..Default::default()
-    };
+    });
 
     let left_material = Material {
         color: Color::new(1.0, 0.8, 0.1),
@@ -205,11 +206,11 @@ fn draw_chapter_7_world() {
         ..Default::default()
     };
 
-    let left = Sphere {
+    let left = Object::Sphere(Sphere {
         material: left_material,
         transformation: Matrix4::translate(-1.5, 0.33, -0.75) * Matrix4::scale(0.33, 0.33, 0.33),
         ..Default::default()
-    };
+    });
 
     let world = World {
         objects: vec![floor, left_wall, right_wall, middle, right, left],
