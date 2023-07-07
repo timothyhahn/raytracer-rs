@@ -132,7 +132,10 @@ fn draw_chapter_6_sphere() {
                 let point = r.position(hit.t);
                 let normal = hit.object.normal_at(point);
                 let eye = -r.direction;
-                let color = hit.object.material().lighting(light, point, eye, normal);
+                let color = hit
+                    .object
+                    .material()
+                    .lighting(light, point, eye, normal, false);
                 canvas.write_pixel(x, y, &color);
             }
         }
@@ -141,8 +144,8 @@ fn draw_chapter_6_sphere() {
 }
 
 #[allow(dead_code)]
-fn draw_chapter_7_world() {
-    println!("Drawing chapter 7 world...");
+fn draw_chapter_7_and_8_world() {
+    println!("Drawing chapter 7 and 8 world...");
     let floor_material = Material {
         color: Color::new(1.0, 0.9, 0.9),
         specular: 0.0,
@@ -228,7 +231,7 @@ fn draw_chapter_7_world() {
     );
 
     let canvas = camera.render(world);
-    let _ = canvas.write_to_file("outputs/chapter_7_world.ppm");
+    let _ = canvas.write_to_file("outputs/chapter_7_and_8_world.ppm");
 }
 
 fn main() {
@@ -236,5 +239,5 @@ fn main() {
     draw_chapter_4_clock();
     draw_chapter_5_circle();
     draw_chapter_6_sphere();
-    draw_chapter_7_world();
+    draw_chapter_7_and_8_world();
 }

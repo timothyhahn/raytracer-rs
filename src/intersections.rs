@@ -1,3 +1,4 @@
+use crate::floats::EPSILON;
 use crate::objects::{Intersectable, Object};
 use crate::rays::Ray;
 use crate::tuples::{Point, Vector};
@@ -15,6 +16,7 @@ pub struct Computations {
     pub eye_vector: Vector,
     pub normal_vector: Vector,
     pub inside: bool,
+    pub over_point: Point,
 }
 
 impl Intersection<'_> {
@@ -41,20 +43,26 @@ impl Intersection<'_> {
         } else {
             (false, normal_vector)
         };
+        let point = ray.position(self.t);
+
+        let over_point = point + normal_vector * EPSILON;
         Computations {
             time: self.t,
             object: *self.object,
-            point: ray.position(self.t),
+            point,
             eye_vector,
             normal_vector,
             inside,
+            over_point,
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::floats::EPSILON;
     use crate::intersections::Intersection;
+    use crate::matrices::Matrix4;
     use crate::objects::Object;
     use crate::rays::Ray;
     use crate::sphere::Sphere;
@@ -171,5 +179,16 @@ mod tests {
         assert_eq!(computations.eye_vector, Vector::new(0.0, 0.0, -1.0));
         assert!(computations.inside);
         assert_eq!(computations.normal_vector, Vector::new(0.0, 0.0, -1.0));
+    }
+
+    #[test]
+    fn hit_should_offset_the_point() {
+        let ray = Ray::new(Point::new(0.0, 0.0, -5.0), Vector::new(0.0, 0.0, 1.0));
+        let mut sphere = Sphere::new();
+        sphere.set_transform(Matrix4::translate(0.0, 0.0, 1.0));
+        let shape = Object::Sphere(sphere);
+        let intersection = Intersection::new(5.0, &shape);
+        let computations = intersection.prepare_computations(ray);
+        assert!(computations.over_point.z < -EPSILON / 2.0);
     }
 }
