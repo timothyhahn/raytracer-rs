@@ -2,6 +2,7 @@ use crate::color::Color;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
+use image::{ImageError, Rgb, RgbImage};
 
 pub struct Canvas {
     pub width: u32,
@@ -37,7 +38,7 @@ impl Canvas {
         self.pixels[y as usize][x as usize]
     }
 
-    pub fn to_ppm(&self) -> String {
+    pub fn to_ppm_string(&self) -> String {
         // Start with the header
         // lines 1-3 of ppm are:
         // P3
@@ -51,9 +52,9 @@ impl Canvas {
         for row in self.pixels.iter() {
             let mut line = String::new();
             for pixel in row.iter() {
-                let r = convert_color_rgb_value_to_ppm_value(pixel.red);
-                let g = convert_color_rgb_value_to_ppm_value(pixel.green);
-                let b = convert_color_rgb_value_to_ppm_value(pixel.blue);
+                let r = convert_canvas_color_value_to_decimal_rgb_value(pixel.red);
+                let g = convert_canvas_color_value_to_decimal_rgb_value(pixel.green);
+                let b = convert_canvas_color_value_to_decimal_rgb_value(pixel.blue);
                 line.push_str(&format!("{} {} {} ", r, g, b));
             }
             line.pop(); // Removes space at end
@@ -85,14 +86,38 @@ impl Canvas {
         ppm
     }
 
-    pub fn write_to_file<P: AsRef<Path>>(&self, path: P) -> std::io::Result<()> {
+    pub fn to_rgb_image(&self) -> RgbImage  {
+        let width = self.width;
+        let height = self.height;
+        let mut img = RgbImage::new(width, height);
+
+        for x in 0..width {
+            for y in 0..height {
+                let pixel = self.pixel_at(x, y);
+                let r = convert_canvas_color_value_to_decimal_rgb_value(pixel.red) as u8;
+                let g = convert_canvas_color_value_to_decimal_rgb_value(pixel.green) as u8;
+                let b = convert_canvas_color_value_to_decimal_rgb_value(pixel.blue) as u8;
+                img.put_pixel(x, y, Rgb([r, g, b]));
+            }
+        }
+
+        img
+    }
+
+    pub fn to_jpeg<P: AsRef<Path>>(&self, path: P) -> Result<(), ImageError> {
+        let img = self.to_rgb_image();
+        img.save(path)?;
+        Ok(())
+    }
+
+    pub fn to_ppm<P: AsRef<Path>>(&self, path: P) -> std::io::Result<()> {
         let mut file = File::create(path)?;
-        file.write_all(self.to_ppm().as_bytes())?;
+        file.write_all(self.to_ppm_string().as_bytes())?;
         Ok(())
     }
 }
 
-fn convert_color_rgb_value_to_ppm_value(value: f64) -> u32 {
+fn convert_canvas_color_value_to_decimal_rgb_value(value: f64) -> u32 {
     let ppm_value = (value * 255.0).round() as u32;
     if ppm_value > MAX_COLOR_VALUE {
         MAX_COLOR_VALUE
@@ -137,7 +162,7 @@ mod tests {
     #[test]
     fn write_ppm_header() {
         let c = Canvas::new(5, 3);
-        let ppm = c.to_ppm();
+        let ppm = c.to_ppm_string();
         let lines: Vec<&str> = ppm.lines().collect();
         assert_eq!(lines[0], "P3");
         assert_eq!(lines[1], "5 3");
@@ -153,7 +178,7 @@ mod tests {
         c.write_pixel(0, 0, &c1);
         c.write_pixel(2, 1, &c2);
         c.write_pixel(4, 2, &c3);
-        let ppm = c.to_ppm();
+        let ppm = c.to_ppm_string();
         let lines: Vec<&str> = ppm.lines().collect();
         assert_eq!(lines[3], "255 0 0 0 0 0 0 0 0 0 0 0 0 0 0");
         assert_eq!(lines[4], "0 0 0 0 0 0 0 128 0 0 0 0 0 0 0");
@@ -169,7 +194,7 @@ mod tests {
                 *pixel = color;
             }
         }
-        let ppm = c.to_ppm();
+        let ppm = c.to_ppm_string();
         let lines: Vec<&str> = ppm.lines().collect();
         assert_eq!(
             lines[3],
@@ -192,7 +217,7 @@ mod tests {
     #[test]
     fn ppm_files_end_with_newline() {
         let c = Canvas::new(5, 3);
-        let ppm = c.to_ppm();
+        let ppm = c.to_ppm_string();
         assert_eq!(ppm.chars().last(), Some('\n'));
     }
 }

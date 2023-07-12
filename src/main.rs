@@ -40,7 +40,8 @@ fn draw_chapter_2_arc() {
         projectile = tick(&environment, projectile);
     }
 
-    let _ = canvas.write_to_file("outputs/chapter_2_arc.ppm");
+    let _ = canvas.to_ppm("outputs/chapter_2_arc.ppm");
+    let _ = canvas.to_jpeg("outputs/chapter_2_arc.jpg");
 }
 
 #[allow(dead_code)]
@@ -69,7 +70,8 @@ fn draw_chapter_4_clock() {
         canvas.write_pixel(x.round() as u32, z.round() as u32, &color);
     }
 
-    let _ = canvas.write_to_file("outputs/chapter_4_clock.ppm");
+    let _ = canvas.to_ppm("outputs/chapter_4_clock.ppm");
+    let _ = canvas.to_jpeg("outputs/chapter_4_clock.jpg");
 }
 
 #[allow(dead_code)]
@@ -97,7 +99,8 @@ fn draw_chapter_5_circle() {
             }
         }
     }
-    let _ = canvas.write_to_file("outputs/chapter_5_circle.ppm");
+    let _ = canvas.to_ppm("outputs/chapter_5_circle.ppm");
+    let _ = canvas.to_jpeg("outputs/chapter_5_circle.jpg");
 }
 
 #[allow(dead_code)]
@@ -140,7 +143,8 @@ fn draw_chapter_6_sphere() {
             }
         }
     }
-    let _ = canvas.write_to_file("outputs/chapter_6_sphere.ppm");
+    let _ = canvas.to_ppm("outputs/chapter_6_sphere.ppm");
+    let _ = canvas.to_jpeg("outputs/chapter_6_sphere.jpg");
 }
 
 #[allow(dead_code)]
@@ -231,7 +235,8 @@ fn draw_chapter_7_and_8_world() {
     );
 
     let canvas = camera.render(world);
-    let _ = canvas.write_to_file("outputs/chapter_7_and_8_world.ppm");
+    let _ = canvas.to_ppm("outputs/chapter_7_and_8_world.ppm");
+    let _ = canvas.to_jpeg("outputs/chapter_7_and_8_world.jpg");
 }
 
 fn main() {
