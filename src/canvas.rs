@@ -2,7 +2,7 @@ use crate::color::Color;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
-use image::{ImageError, Rgb, RgbImage};
+use image::{ImageError, ImageOutputFormat, Rgb, RgbImage};
 
 pub struct Canvas {
     pub width: u32,
@@ -106,7 +106,8 @@ impl Canvas {
 
     pub fn to_jpeg<P: AsRef<Path>>(&self, path: P) -> Result<(), ImageError> {
         let img = self.to_rgb_image();
-        img.save(path)?;
+        let mut buffer = File::create(path)?;
+        img.write_to(&mut buffer, ImageOutputFormat::Jpeg(100))?;
         Ok(())
     }
 
