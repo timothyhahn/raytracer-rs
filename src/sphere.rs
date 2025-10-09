@@ -22,7 +22,11 @@ impl Sphere {
 
     // Returns list of time values where the ray intersects the sphere
     pub fn intersect(&self, ray: Ray) -> Vec<f64> {
-        let ray = ray.transform(self.transformation.inverse().unwrap());
+        let ray = ray.transform(
+            self.transformation
+                .inverse()
+                .expect("sphere transformation should be invertible"),
+        );
         let sphere_to_ray = ray.origin - self.center;
         let a = ray.direction.dot(&ray.direction);
         let b = 2.0 * ray.direction.dot(&sphere_to_ray);
@@ -38,10 +42,14 @@ impl Sphere {
     }
 
     pub fn normal_at(&self, point: Point) -> Vector {
-        let object_point = self.transformation.inverse().unwrap() * point;
+        let inverse_transform = self
+            .transformation
+            .inverse()
+            .expect("sphere transformation should be invertible");
+        let object_point = inverse_transform * point;
         let object_normal = object_point - Point::new(0.0, 0.0, 0.0);
 
-        let world_normal = self.transformation.inverse().unwrap().transpose() * object_normal;
+        let world_normal = inverse_transform.transpose() * object_normal;
 
         world_normal.normalize()
     }
@@ -87,7 +95,7 @@ mod tests {
     fn changing_sphere_transformation() {
         let mut sphere = Sphere::new();
         let t = Matrix4::translate(2.0, 3.0, 4.0);
-        sphere.set_transform(t.clone());
+        sphere.set_transform(t);
         assert_eq!(sphere.transformation, t);
     }
 
@@ -221,8 +229,19 @@ mod tests {
     fn compute_normal_on_translated_sphere() {
         let mut sphere = Sphere::new();
         sphere.set_transform(Matrix4::translate(0.0, 1.0, 0.0));
-        let normal = sphere.normal_at(Point::new(0.0, 1.70711, -0.70711));
-        assert_eq!(normal, Vector::new(0.0, 0.70711, -0.70711));
+        let normal = sphere.normal_at(Point::new(
+            0.0,
+            1.0 + std::f64::consts::FRAC_1_SQRT_2,
+            -std::f64::consts::FRAC_1_SQRT_2,
+        ));
+        assert_eq!(
+            normal,
+            Vector::new(
+                0.0,
+                std::f64::consts::FRAC_1_SQRT_2,
+                -std::f64::consts::FRAC_1_SQRT_2
+            )
+        );
     }
 
     #[test]
@@ -246,7 +265,7 @@ mod tests {
     fn sphere_can_be_assigned_material() {
         let mut sphere = Sphere::new();
         let material = Material::new(Color::new(0.5, 0.5, 1.0), 0.2, 0.8, 0.8, 90.0);
-        sphere.set_material(material.clone());
+        sphere.set_material(material);
         sphere.material = material;
         assert_eq!(sphere.material, material);
     }

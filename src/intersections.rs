@@ -20,7 +20,7 @@ pub struct Computations {
 }
 
 impl Intersection<'_> {
-    pub fn new(t: f64, object: &Object) -> Intersection {
+    pub fn new(t: f64, object: &Object) -> Intersection<'_> {
         Intersection { t, object }
     }
 

@@ -18,15 +18,30 @@ pub struct Vector {
     pub z: f64,
 }
 
+impl Default for Vector {
+    fn default() -> Self {
+        Self::ZERO
+    }
+}
+
 impl Vector {
+    pub const ZERO: Self = Self {
+        x: 0.0,
+        y: 0.0,
+        z: 0.0,
+    };
+
+    #[inline]
     pub fn magnitude(&self) -> f64 {
         (self.x.powi(2) + self.y.powi(2) + self.z.powi(2)).sqrt()
     }
 
+    #[inline]
     pub fn normalize(&self) -> Vector {
         *self / self.magnitude()
     }
 
+    #[inline]
     pub fn cross(&self, other: &Vector) -> Vector {
         Vector::new(
             self.y * other.z - self.z * other.y,
@@ -35,10 +50,12 @@ impl Vector {
         )
     }
 
+    #[inline]
     pub fn reflect(&self, normal: &Vector) -> Vector {
         *self - *normal * 2.0 * self.dot(normal)
     }
 
+    #[inline]
     pub fn dot(&self, other: &Vector) -> f64 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
@@ -50,7 +67,7 @@ impl Tuple for Vector {
     }
 
     fn zero() -> Vector {
-        Vector::new(0.0, 0.0, 0.0)
+        Self::ZERO
     }
 
     fn x(&self) -> f64 {
@@ -90,7 +107,7 @@ impl Neg for Vector {
     type Output = Self;
 
     fn neg(self) -> Self::Output {
-        Self::new(0.0, 0.0, 0.0) - self
+        Self::new(-self.x, -self.y, -self.z)
     }
 }
 
@@ -123,13 +140,27 @@ pub struct Point {
     pub z: f64,
 }
 
+impl Default for Point {
+    fn default() -> Self {
+        Self::ZERO
+    }
+}
+
+impl Point {
+    pub const ZERO: Self = Self {
+        x: 0.0,
+        y: 0.0,
+        z: 0.0,
+    };
+}
+
 impl Tuple for Point {
     fn new(x: f64, y: f64, z: f64) -> Point {
         Point { x, y, z }
     }
 
     fn zero() -> Point {
-        Point::new(0.0, 0.0, 0.0)
+        Self::ZERO
     }
 
     fn x(&self) -> f64 {

@@ -735,7 +735,7 @@ mod tests {
             [6.0, -2.0, 0.0, 5.0],
         ]);
 
-        let matrix_c = matrix_a.clone() * matrix_b.clone();
+        let matrix_c = matrix_a * matrix_b;
 
         assert_ne!(matrix_a, matrix_b);
         assert_eq!(matrix_a, matrix_c * matrix_b.inverse().unwrap());

@@ -1,8 +1,8 @@
 use crate::color::Color;
+use image::{ImageError, ImageOutputFormat, Rgb, RgbImage};
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
-use image::{ImageError, ImageOutputFormat, Rgb, RgbImage};
 
 pub struct Canvas {
     pub width: u32,
@@ -86,7 +86,7 @@ impl Canvas {
         ppm
     }
 
-    pub fn to_rgb_image(&self) -> RgbImage  {
+    pub fn to_rgb_image(&self) -> RgbImage {
         let width = self.width;
         let height = self.height;
         let mut img = RgbImage::new(width, height);

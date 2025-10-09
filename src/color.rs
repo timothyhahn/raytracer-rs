@@ -8,17 +8,34 @@ pub struct Color {
     pub blue: f64,
 }
 
+impl Default for Color {
+    fn default() -> Self {
+        Self::BLACK
+    }
+}
+
 impl Color {
-    pub fn new(red: f64, green: f64, blue: f64) -> Color {
+    pub const BLACK: Self = Self {
+        red: 0.0,
+        green: 0.0,
+        blue: 0.0,
+    };
+    pub const WHITE: Self = Self {
+        red: 1.0,
+        green: 1.0,
+        blue: 1.0,
+    };
+
+    pub const fn new(red: f64, green: f64, blue: f64) -> Color {
         Color { red, green, blue }
     }
 
-    pub fn black() -> Color {
-        Color::new(0.0, 0.0, 0.0)
+    pub const fn black() -> Color {
+        Self::BLACK
     }
 
-    pub fn white() -> Color {
-        Color::new(1.0, 1.0, 1.0)
+    pub const fn white() -> Color {
+        Self::WHITE
     }
 }
 

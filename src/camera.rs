@@ -43,8 +43,12 @@ impl Camera {
         let world_x = self.half_width - x_offset;
         let world_y = self.half_height - y_offset;
 
-        let pixel = self.transform.inverse().unwrap() * Point::new(world_x, world_y, -1.0);
-        let origin = self.transform.inverse().unwrap() * Point::new(0.0, 0.0, 0.0);
+        let inverse_transform = self
+            .transform
+            .inverse()
+            .expect("camera transform should be invertible");
+        let pixel = inverse_transform * Point::new(world_x, world_y, -1.0);
+        let origin = inverse_transform * Point::new(0.0, 0.0, 0.0);
         let direction = (pixel - origin).normalize();
         Ray::new(origin, direction)
     }
@@ -53,8 +57,6 @@ impl Camera {
         let mut image = Canvas::new(self.hsize, self.vsize);
         for y in 0..self.vsize {
             for x in 0..self.hsize {
-                // This clone makes me sad.
-                // I think it would be fixed if we just made matrices no bigger than 4x4.
                 let ray = self.ray_for_pixel(x as usize, y as usize);
                 let color = world.color_at(ray);
                 image.write_pixel(x, y, &color);

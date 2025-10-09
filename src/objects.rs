@@ -7,7 +7,7 @@ use crate::tuples::{Point, Vector};
 
 pub trait Intersectable {
     fn intersect(&self, r: Ray) -> Vec<f64>;
-    fn intersect_with_object(&self, r: Ray) -> Vec<Intersection>;
+    fn intersect_with_object(&self, r: Ray) -> Vec<Intersection<'_>>;
     fn normal_at(&self, p: Point) -> Vector;
     fn material(&self) -> Material;
     fn transformation(&self) -> Matrix4;
@@ -27,7 +27,7 @@ impl Intersectable for Object {
         }
     }
 
-    fn intersect_with_object(&self, r: Ray) -> Vec<Intersection> {
+    fn intersect_with_object(&self, r: Ray) -> Vec<Intersection<'_>> {
         match *self {
             Object::Sphere(ref s) => s
                 .intersect(r)

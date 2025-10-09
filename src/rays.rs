@@ -8,14 +8,17 @@ pub struct Ray {
 }
 
 impl Ray {
+    #[inline]
     pub fn new(origin: Point, direction: Vector) -> Ray {
         Ray { origin, direction }
     }
 
+    #[inline]
     pub fn position(self, t: f64) -> Point {
         self.origin + self.direction * t
     }
 
+    #[inline]
     pub fn transform(self, matrix: Matrix4) -> Ray {
         Ray::new(matrix * self.origin, matrix * self.direction)
     }

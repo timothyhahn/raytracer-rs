@@ -21,16 +21,15 @@ impl World {
         }
     }
 
-    pub fn intersect(&self, ray: Ray) -> Vec<Intersection> {
-        let mut intersections: Vec<Intersection> = Vec::new();
+    pub fn intersect(&self, ray: Ray) -> Vec<Intersection<'_>> {
+        let mut intersections: Vec<Intersection> = Vec::with_capacity(self.objects.len() * 2);
         for object in self.objects.iter() {
-            let object_intersections = object.intersect(ray);
-            for intersection in object_intersections {
-                intersections.push(Intersection {
-                    object,
-                    t: intersection,
-                });
-            }
+            intersections.extend(
+                object
+                    .intersect(ray)
+                    .iter()
+                    .map(|&t| Intersection { object, t }),
+            );
         }
         intersections.sort_by(|a, b| a.t.partial_cmp(&b.t).unwrap());
         intersections
