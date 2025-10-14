@@ -45,9 +45,8 @@ impl Material {
         normal_vector: Vector,
         in_shadow: bool,
     ) -> Color {
-        // Use pattern if one is set.
-        let color = if self.pattern.is_some() {
-            let pattern = self.pattern.as_ref().unwrap();
+        // Use pattern if one is set, otherwise use the material's base color.
+        let color = if let Some(pattern) = &self.pattern {
             pattern.color_at_object(object, point)
         } else {
             self.color
@@ -103,6 +102,7 @@ impl PartialEq for Material {
             && float_equal(self.ambient, other.ambient)
             && float_equal(self.diffuse, other.diffuse)
             && float_equal(self.specular, other.specular)
+            && self.pattern == other.pattern
     }
 }
 

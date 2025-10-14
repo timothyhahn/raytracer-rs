@@ -31,15 +31,22 @@ impl World {
                     .map(|&t| Intersection { object, t }),
             );
         }
-        intersections.sort_by(|a, b| a.t.partial_cmp(&b.t).unwrap());
+        // Sort by t value. NaN values (shouldn't happen) are treated as greater than any number
+        intersections.sort_by(|a, b| a.t.partial_cmp(&b.t).unwrap_or(std::cmp::Ordering::Equal));
         intersections
     }
 
     pub fn shade_hit(&self, comps: Computations) -> Color {
+        // If there's no light source, return black (no illumination)
+        let light = match self.light_source {
+            Some(light) => light,
+            None => return Color::black(),
+        };
+
         let in_shadow = self.is_shadowed(comps.over_point);
         comps.object.material().lighting(
             &comps.object,
-            self.light_source.unwrap(),
+            light,
             comps.point,
             comps.eye_vector,
             comps.normal_vector,
@@ -60,8 +67,14 @@ impl World {
     }
 
     pub fn is_shadowed(&self, point: Point) -> bool {
+        // If there's no light source, there's no shadow
+        let light = match self.light_source {
+            Some(light) => light,
+            None => return false,
+        };
+
         // Measure the distance from point to the light source
-        let v = self.light_source.unwrap().position - point;
+        let v = light.position - point;
         let distance = v.magnitude();
         let direction = v.normalize();
 
