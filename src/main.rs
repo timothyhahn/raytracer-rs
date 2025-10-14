@@ -6,7 +6,8 @@ use raytracer::intersections::Intersection;
 use raytracer::lights::PointLight;
 use raytracer::materials::Material;
 use raytracer::matrices::Matrix4;
-use raytracer::objects::{Intersectable, Object};
+use raytracer::objects::{HasMaterial, Intersectable, Object};
+use raytracer::planes::Plane;
 use raytracer::rays::Ray;
 use raytracer::sphere::Sphere;
 use raytracer::transformations::view_transform;
@@ -159,7 +160,6 @@ fn draw_chapter_7_and_8_world() {
     let floor = Object::Sphere(Sphere {
         transformation: Matrix4::scale(10.0, 0.01, 10.0),
         material: floor_material,
-        ..Default::default()
     });
 
     let left_wall = Object::Sphere(Sphere {
@@ -168,7 +168,6 @@ fn draw_chapter_7_and_8_world() {
             * Matrix4::rotate_y(-PI / 4.0)
             * Matrix4::rotate_x(PI / 2.0)
             * Matrix4::scale(10.0, 0.01, 10.0),
-        ..Default::default()
     });
 
     let right_wall = Object::Sphere(Sphere {
@@ -177,7 +176,6 @@ fn draw_chapter_7_and_8_world() {
             * Matrix4::rotate_y(PI / 4.0)
             * Matrix4::rotate_x(PI / 2.0)
             * Matrix4::scale(10.0, 0.01, 10.0),
-        ..Default::default()
     });
 
     let middle_material = Material {
@@ -190,7 +188,6 @@ fn draw_chapter_7_and_8_world() {
     let middle = Object::Sphere(Sphere {
         material: middle_material,
         transformation: Matrix4::translate(-0.5, 1.0, 0.5),
-        ..Default::default()
     });
 
     let right_material = Material {
@@ -203,7 +200,6 @@ fn draw_chapter_7_and_8_world() {
     let right = Object::Sphere(Sphere {
         material: right_material,
         transformation: Matrix4::translate(1.5, 0.5, -0.5) * Matrix4::scale(0.5, 0.5, 0.5),
-        ..Default::default()
     });
 
     let left_material = Material {
@@ -216,7 +212,6 @@ fn draw_chapter_7_and_8_world() {
     let left = Object::Sphere(Sphere {
         material: left_material,
         transformation: Matrix4::translate(-1.5, 0.33, -0.75) * Matrix4::scale(0.33, 0.33, 0.33),
-        ..Default::default()
     });
 
     let world = World {
@@ -239,10 +234,149 @@ fn draw_chapter_7_and_8_world() {
     let _ = canvas.to_jpeg("outputs/chapter_7_and_8_world.jpg");
 }
 
+#[allow(dead_code)]
+fn draw_chapter_9_plane_scene() {
+    println!("Drawing chapter 9 plane scene...");
+
+    // === ROOM CONSTRUCTION (5 walls) ===
+
+    // Floor - default plane at y=0
+    let floor_material = Material {
+        color: Color::new(0.8, 0.8, 0.8),
+        specular: 0.1,
+        ..Default::default()
+    };
+
+    let floor = Object::Plane(Plane {
+        transformation: Matrix4::identity(),
+        material: floor_material,
+    });
+
+    // Ceiling - translated up
+    let ceiling_material = Material {
+        color: Color::new(0.9, 0.9, 0.95),
+        specular: 0.0,
+        ..Default::default()
+    };
+
+    let ceiling = Object::Plane(Plane {
+        transformation: Matrix4::translate(0.0, 5.0, 0.0),
+        material: ceiling_material,
+    });
+
+    // Back wall - rotated and translated
+    let back_wall_material = Material {
+        color: Color::new(0.7, 0.8, 0.9),
+        specular: 0.0,
+        ..Default::default()
+    };
+
+    let back_wall = Object::Plane(Plane {
+        transformation: Matrix4::translate(0.0, 0.0, 5.0) * Matrix4::rotate_x(PI / 2.0),
+        material: back_wall_material,
+    });
+
+    // Left wall - rotated and translated
+    let left_wall_material = Material {
+        color: Color::new(0.9, 0.7, 0.7),
+        specular: 0.0,
+        ..Default::default()
+    };
+
+    let left_wall = Object::Plane(Plane {
+        transformation: Matrix4::translate(-5.0, 0.0, 0.0) * Matrix4::rotate_z(PI / 2.0),
+        material: left_wall_material,
+    });
+
+    // Right wall - rotated and translated
+    let right_wall_material = Material {
+        color: Color::new(0.7, 0.9, 0.7),
+        specular: 0.0,
+        ..Default::default()
+    };
+
+    let right_wall = Object::Plane(Plane {
+        transformation: Matrix4::translate(5.0, 0.0, 0.0) * Matrix4::rotate_z(-PI / 2.0),
+        material: right_wall_material,
+    });
+
+    // === SPHERES ===
+
+    // Big boi
+    let dark_green_material = Material {
+        color: Color::new(0.1, 0.5, 0.1),
+        diffuse: 0.7,
+        specular: 0.3,
+        ..Default::default()
+    };
+
+    let large_sphere = Object::Sphere(Sphere {
+        transformation: Matrix4::translate(-0.5, 1.0, 0.5),
+        material: dark_green_material,
+    });
+
+    // Medium boi
+    let bright_green_material = Material {
+        color: Color::new(0.2, 0.8, 0.2),
+        diffuse: 0.7,
+        specular: 0.3,
+        ..Default::default()
+    };
+
+    let right_sphere = Object::Sphere(Sphere {
+        transformation: Matrix4::translate(1.5, 0.75, 0.0) * Matrix4::scale(0.75, 0.75, 0.75),
+        material: bright_green_material,
+    });
+
+    // Smol boi
+    let yellow_material = Material {
+        color: Color::new(1.0, 0.9, 0.2),
+        diffuse: 0.7,
+        specular: 0.3,
+        ..Default::default()
+    };
+
+    let small_sphere = Object::Sphere(Sphere {
+        transformation: Matrix4::translate(-1.8, 0.4, -0.3) * Matrix4::scale(0.4, 0.4, 0.4),
+        material: yellow_material,
+    });
+
+    // === WORLD ===
+
+    let world = World {
+        objects: vec![
+            floor,
+            ceiling,
+            back_wall,
+            left_wall,
+            right_wall,
+            large_sphere,
+            right_sphere,
+            small_sphere,
+        ],
+        light_source: Some(PointLight::new(
+            Point::new(-3.0, 4.0, 0.0), // Light inside the room, near ceiling, slightly offset
+            Color::white(),
+        )),
+    };
+
+    let mut camera = Camera::new(1000, 500, PI / 3.0);
+    camera.transform = view_transform(
+        Point::new(0.0, 2.5, -8.0), // Further back to see the whole room
+        Point::new(0.0, 1.5, 0.0),  // Looking at middle of room
+        Vector::new(0.0, 1.0, 0.0),
+    );
+
+    let canvas = camera.render(world);
+    let _ = canvas.to_ppm("outputs/chapter_9_plane_scene.ppm");
+    let _ = canvas.to_jpeg("outputs/chapter_9_plane_scene.jpg");
+}
+
 fn main() {
     draw_chapter_2_arc();
     draw_chapter_4_clock();
     draw_chapter_5_circle();
     draw_chapter_6_sphere();
     draw_chapter_7_and_8_world();
+    draw_chapter_9_plane_scene();
 }

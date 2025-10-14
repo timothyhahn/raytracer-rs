@@ -3,7 +3,7 @@ use crate::intersections::{Computations, Intersection};
 use crate::lights::PointLight;
 use crate::materials::Material;
 use crate::matrices::Matrix4;
-use crate::objects::{Intersectable, Object};
+use crate::objects::{HasMaterial, Intersectable, Object};
 use crate::rays::Ray;
 use crate::sphere::Sphere;
 use crate::tuples::{Point, Tuple};
@@ -113,7 +113,7 @@ mod tests {
     use crate::lights::PointLight;
     use crate::materials::Material;
     use crate::matrices::Matrix4;
-    use crate::objects::{Intersectable, Object};
+    use crate::objects::{HasMaterial, Intersectable, Object, Transformable};
     use crate::rays::Ray;
     use crate::sphere::Sphere;
     use crate::tuples::{Point, Tuple, Vector};
@@ -248,12 +248,13 @@ mod tests {
     #[test]
     fn shade_hit_is_given_an_intersection_in_shadow() {
         let s1 = Sphere::new();
-        let mut s2 = Sphere::new();
-        s2.set_transform(Matrix4::translate(0.0, 0.0, 10.0));
+        let s2 = Sphere::new();
+        let mut obj2 = Object::Sphere(s2);
+        obj2.set_transform(Matrix4::translate(0.0, 0.0, 10.0));
 
         let world = World {
             light_source: Some(PointLight::new(Point::new(0.0, 0.0, -10.0), Color::white())),
-            objects: vec![Object::Sphere(s1), Object::Sphere(s2)],
+            objects: vec![Object::Sphere(s1), obj2],
         };
 
         let ray = Ray::new(Point::new(0.0, 0.0, 5.0), Vector::new(0.0, 0.0, 1.0));

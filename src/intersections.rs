@@ -63,7 +63,7 @@ mod tests {
     use crate::floats::EPSILON;
     use crate::intersections::Intersection;
     use crate::matrices::Matrix4;
-    use crate::objects::Object;
+    use crate::objects::{Object, Transformable};
     use crate::rays::Ray;
     use crate::sphere::Sphere;
     use crate::tuples::{Point, Tuple, Vector};
@@ -184,9 +184,9 @@ mod tests {
     #[test]
     fn hit_should_offset_the_point() {
         let ray = Ray::new(Point::new(0.0, 0.0, -5.0), Vector::new(0.0, 0.0, 1.0));
-        let mut sphere = Sphere::new();
-        sphere.set_transform(Matrix4::translate(0.0, 0.0, 1.0));
-        let shape = Object::Sphere(sphere);
+        let sphere = Sphere::new();
+        let mut shape = Object::Sphere(sphere);
+        shape.set_transform(Matrix4::translate(0.0, 0.0, 1.0));
         let intersection = Intersection::new(5.0, &shape);
         let computations = intersection.prepare_computations(ray);
         assert!(computations.over_point.z < -EPSILON / 2.0);
