@@ -1,8 +1,8 @@
-use crate::canvas::Canvas;
-use crate::matrices::Matrix4;
-use crate::rays::Ray;
-use crate::tuples::{Point, Tuple};
-use crate::world::World;
+use crate::rendering::canvas::Canvas;
+use crate::core::matrices::Matrix4;
+use crate::rendering::rays::Ray;
+use crate::core::tuples::{Point, Tuple};
+use crate::rendering::world::World;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Camera {
@@ -69,13 +69,13 @@ impl Camera {
 
 #[cfg(test)]
 mod tests {
-    use crate::camera::Camera;
-    use crate::color::Color;
-    use crate::floats::float_equal;
-    use crate::matrices::Matrix4;
-    use crate::transformations::view_transform;
-    use crate::tuples::{Point, Tuple, Vector};
-    use crate::world::World;
+    use crate::rendering::camera::Camera;
+    use crate::core::color::Color;
+    use crate::core::floats::float_equal;
+    use crate::core::matrices::Matrix4;
+    use crate::scene::transformations::view_transform;
+    use crate::core::tuples::{Point, Tuple, Vector};
+    use crate::rendering::world::World;
     use std::f64::consts::PI;
 
     #[test]

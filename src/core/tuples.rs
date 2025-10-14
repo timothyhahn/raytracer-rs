@@ -1,4 +1,4 @@
-use crate::floats;
+use super::floats;
 use std::ops::{Add, Div, Mul, Neg, Sub};
 
 pub trait Tuple {
@@ -244,8 +244,8 @@ impl PartialEq for Point {
 
 #[cfg(test)]
 mod tests {
-    use crate::floats::float_equal;
-    use crate::tuples::{Point, Tuple, Vector};
+    use super::floats::float_equal;
+    use super::{Point, Tuple, Vector};
 
     #[test]
     fn a_tuple_with_1_is_a_point() {

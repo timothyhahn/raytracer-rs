@@ -1,5 +1,5 @@
-use crate::color::Color;
-use crate::tuples::Point;
+use crate::core::color::Color;
+use crate::core::tuples::Point;
 
 #[derive(Clone, Copy)]
 pub struct PointLight {
@@ -18,9 +18,9 @@ impl PointLight {
 
 #[cfg(test)]
 mod tests {
-    use crate::color::Color;
-    use crate::lights::PointLight;
-    use crate::tuples::{Point, Tuple};
+    use crate::core::color::Color;
+    use super::PointLight;
+    use crate::core::tuples::{Point, Tuple};
 
     #[test]
     fn point_light_has_position_and_intensity() {

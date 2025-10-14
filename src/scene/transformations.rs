@@ -1,5 +1,5 @@
-use crate::matrices::Matrix4;
-use crate::tuples::{Point, Vector};
+use crate::core::matrices::Matrix4;
+use crate::core::tuples::{Point, Vector};
 
 pub fn view_transform(from: Point, to: Point, up: Vector) -> Matrix4 {
     let forward = (to - from).normalize();
@@ -18,9 +18,9 @@ pub fn view_transform(from: Point, to: Point, up: Vector) -> Matrix4 {
 
 #[cfg(test)]
 mod tests {
-    use crate::matrices::Matrix4;
-    use crate::transformations::view_transform;
-    use crate::tuples::{Point, Tuple, Vector};
+    use crate::core::matrices::Matrix4;
+    use super::view_transform;
+    use crate::core::tuples::{Point, Tuple, Vector};
 
     #[test]
     fn transformation_matrix_for_default_orientation() {

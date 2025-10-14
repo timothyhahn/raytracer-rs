@@ -1,7 +1,7 @@
-use crate::floats::EPSILON;
-use crate::objects::{Intersectable, Object};
-use crate::rays::Ray;
-use crate::tuples::{Point, Vector};
+use crate::core::floats::EPSILON;
+use crate::rendering::objects::{Intersectable, Object};
+use crate::rendering::rays::Ray;
+use crate::core::tuples::{Point, Vector};
 
 #[derive(Debug, Copy, Clone)]
 pub struct Intersection<'a> {
@@ -60,13 +60,13 @@ impl Intersection<'_> {
 
 #[cfg(test)]
 mod tests {
-    use crate::floats::EPSILON;
-    use crate::intersections::Intersection;
-    use crate::matrices::Matrix4;
-    use crate::objects::{Object, Transformable};
-    use crate::rays::Ray;
-    use crate::sphere::Sphere;
-    use crate::tuples::{Point, Tuple, Vector};
+    use crate::core::floats::EPSILON;
+    use crate::rendering::intersections::Intersection;
+    use crate::core::matrices::Matrix4;
+    use crate::rendering::objects::{Object, Transformable};
+    use crate::rendering::rays::Ray;
+    use crate::geometry::sphere::Sphere;
+    use crate::core::tuples::{Point, Tuple, Vector};
 
     #[test]
     fn an_intersection_encapsulates_time_and_object() {

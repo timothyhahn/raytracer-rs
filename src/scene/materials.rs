@@ -1,7 +1,7 @@
-use crate::color::Color;
-use crate::floats::float_equal;
-use crate::lights::PointLight;
-use crate::tuples::{Point, Vector};
+use crate::core::color::Color;
+use crate::core::floats::float_equal;
+use super::lights::PointLight;
+use crate::core::tuples::{Point, Vector};
 
 #[derive(Debug, Copy, Clone)]
 pub struct Material {
@@ -95,10 +95,10 @@ impl PartialEq for Material {
 
 #[cfg(test)]
 mod tests {
-    use crate::color::Color;
-    use crate::lights::PointLight;
-    use crate::materials::Material;
-    use crate::tuples::{Point, Tuple, Vector};
+    use crate::core::color::Color;
+    use crate::scene::lights::PointLight;
+    use super::Material;
+    use crate::core::tuples::{Point, Tuple, Vector};
 
     #[test]
     fn default_material() {

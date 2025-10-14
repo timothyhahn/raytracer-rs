@@ -1,11 +1,11 @@
-use crate::intersections::Intersection;
-use crate::materials::Material;
-use crate::matrices::Matrix4;
-use crate::planes::Plane;
-use crate::rays::Ray;
-use crate::shapes::Shape;
-use crate::sphere::Sphere;
-use crate::tuples::{Point, Vector};
+use crate::rendering::intersections::Intersection;
+use crate::scene::materials::Material;
+use crate::core::matrices::Matrix4;
+use crate::geometry::planes::Plane;
+use crate::rendering::rays::Ray;
+use crate::geometry::shapes::Shape;
+use crate::geometry::sphere::Sphere;
+use crate::core::tuples::{Point, Vector};
 
 /// Trait for objects that can be intersected by rays and have surface normals.
 pub trait Intersectable {

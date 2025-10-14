@@ -1,4 +1,4 @@
-use crate::color::Color;
+use crate::core::color::Color;
 use image::{ImageError, ImageOutputFormat, Rgb, RgbImage};
 use std::fs::File;
 use std::io::Write;
@@ -129,8 +129,8 @@ fn convert_canvas_color_value_to_decimal_rgb_value(value: f64) -> u32 {
 
 #[cfg(test)]
 mod tests {
-    use crate::canvas::Canvas;
-    use crate::canvas::Color;
+    use crate::rendering::canvas::Canvas;
+    use crate::rendering::canvas::Color;
 
     #[test]
     fn creating_a_canvas() {

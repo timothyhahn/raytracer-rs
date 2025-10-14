@@ -1,5 +1,5 @@
-use crate::rays::Ray;
-use crate::tuples::{Point, Vector};
+use crate::rendering::rays::Ray;
+use crate::core::tuples::{Point, Vector};
 
 /// The Shape trait defines the pure geometry interface that all shapes must implement.
 /// Shapes work in object space - transformation and materials are handled by the Object enum.
@@ -16,9 +16,9 @@ pub trait Shape {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::materials::Material;
-    use crate::matrices::Matrix4;
-    use crate::tuples::Tuple;
+    use crate::scene::materials::Material;
+    use crate::core::matrices::Matrix4;
+    use crate::core::tuples::Tuple;
     use std::cell::RefCell;
 
     /// TestShape is used for testing the abstract Shape behavior.
@@ -65,11 +65,11 @@ mod tests {
 
     #[test]
     fn intersecting_scaled_shape_with_ray() {
-        use crate::objects::{Intersectable, Object, Transformable};
-        use crate::rays::Ray;
+        use crate::rendering::objects::{Intersectable, Object, Transformable};
+        use crate::rendering::rays::Ray;
 
         let r = Ray::new(Point::new(0.0, 0.0, -5.0), Vector::new(0.0, 0.0, 1.0));
-        let mut shape = Object::Sphere(crate::sphere::Sphere {
+        let mut shape = Object::Sphere(crate::geometry::sphere::Sphere {
             transformation: Matrix4::identity(),
             material: Material::default(),
         });
@@ -87,11 +87,11 @@ mod tests {
 
     #[test]
     fn intersecting_translated_shape_with_ray() {
-        use crate::objects::{Intersectable, Object, Transformable};
-        use crate::rays::Ray;
+        use crate::rendering::objects::{Intersectable, Object, Transformable};
+        use crate::rendering::rays::Ray;
 
         let r = Ray::new(Point::new(0.0, 0.0, -5.0), Vector::new(0.0, 0.0, 1.0));
-        let mut shape = Object::Sphere(crate::sphere::Sphere {
+        let mut shape = Object::Sphere(crate::geometry::sphere::Sphere {
             transformation: Matrix4::identity(),
             material: Material::default(),
         });
@@ -105,9 +105,9 @@ mod tests {
 
     #[test]
     fn computing_normal_on_translated_shape() {
-        use crate::objects::{Intersectable, Object, Transformable};
+        use crate::rendering::objects::{Intersectable, Object, Transformable};
 
-        let mut shape = Object::Sphere(crate::sphere::Sphere {
+        let mut shape = Object::Sphere(crate::geometry::sphere::Sphere {
             transformation: Matrix4::identity(),
             material: Material::default(),
         });
@@ -131,9 +131,9 @@ mod tests {
 
     #[test]
     fn computing_normal_on_transformed_shape() {
-        use crate::objects::{Intersectable, Object, Transformable};
+        use crate::rendering::objects::{Intersectable, Object, Transformable};
 
-        let mut shape = Object::Sphere(crate::sphere::Sphere {
+        let mut shape = Object::Sphere(crate::geometry::sphere::Sphere {
             transformation: Matrix4::identity(),
             material: Material::default(),
         });

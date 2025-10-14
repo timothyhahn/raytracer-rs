@@ -1,4 +1,4 @@
-use crate::floats::float_equal;
+use super::floats::float_equal;
 use std::ops::{Add, Mul, Sub};
 
 #[derive(Debug, Clone, Copy)]
@@ -93,7 +93,7 @@ impl PartialEq for Color {
 
 #[cfg(test)]
 mod tests {
-    use crate::color::Color;
+    use super::Color;
 
     #[test]
     fn colors_are_red_green_blue_tuples() {

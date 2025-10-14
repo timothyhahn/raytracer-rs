@@ -1,0 +1,19 @@
+# Chapter 6: Sphere with lighting and material
+
+[camera]
+width = 500
+height = 500
+fov = 53.13  # Calculated to match original wall projection
+from = [0.0, 0.0, -5.0]
+to = [0.0, 0.0, 0.0]
+up = [0.0, 1.0, 0.0]
+
+[light]
+position = [-10.0, 10.0, -10.0]
+intensity = [1.0, 1.0, 1.0]
+
+[[objects]]
+type = "sphere"
+
+[objects.material]
+color = [1.0, 0.2, 1.0]

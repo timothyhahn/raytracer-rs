@@ -1,8 +1,8 @@
-use crate::materials::Material;
-use crate::matrices::Matrix4;
-use crate::rays::Ray;
-use crate::shapes::Shape;
-use crate::tuples::{Point, Tuple, Vector};
+use crate::scene::materials::Material;
+use crate::core::matrices::Matrix4;
+use crate::rendering::rays::Ray;
+use crate::geometry::shapes::Shape;
+use crate::core::tuples::{Point, Tuple, Vector};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Sphere {
@@ -61,10 +61,10 @@ impl Default for Sphere {
 
 #[cfg(test)]
 mod tests {
-    use crate::rays::Ray;
-    use crate::shapes::Shape;
-    use crate::sphere::Sphere;
-    use crate::tuples::{Point, Tuple, Vector};
+    use crate::rendering::rays::Ray;
+    use crate::geometry::shapes::Shape;
+    use crate::geometry::sphere::Sphere;
+    use crate::core::tuples::{Point, Tuple, Vector};
 
     #[test]
     fn ray_intersects_sphere_at_two_points() {

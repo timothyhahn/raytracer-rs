@@ -1,5 +1,5 @@
-use crate::floats::float_equal;
-use crate::tuples::{Point, Tuple, Vector};
+use super::floats::float_equal;
+use super::tuples::{Point, Tuple, Vector};
 use std::ops::Mul;
 
 // Most things rely on Matrix4, everything else is used by Matrix2 for things like cofactors.
@@ -331,8 +331,8 @@ impl PartialEq for Matrix2 {
 
 #[cfg(test)]
 mod tests {
-    use crate::matrices::{Matrix2, Matrix3, Matrix4};
-    use crate::tuples::{Point, Tuple, Vector};
+    use super::{Matrix2, Matrix3, Matrix4};
+    use crate::core::tuples::{Point, Tuple, Vector};
     use std::f64::consts::PI;
 
     // First since this is the most used type of matrix.

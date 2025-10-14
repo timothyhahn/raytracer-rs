@@ -1,4 +1,4 @@
-use crate::tuples::{Point, Vector};
+use crate::core::tuples::{Point, Vector};
 
 pub struct Projectile {
     pub position: Point,
@@ -18,8 +18,8 @@ pub fn tick(env: &Environment, proj: Projectile) -> Projectile {
 
 #[cfg(test)]
 mod tests {
-    use crate::fire_projectiles::{tick, Environment, Projectile};
-    use crate::tuples::{Point, Tuple, Vector};
+    use super::{tick, Environment, Projectile};
+    use crate::core::tuples::{Point, Tuple, Vector};
 
     #[test]
     fn ticking_projectile() {

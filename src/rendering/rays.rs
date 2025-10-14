@@ -1,5 +1,5 @@
-use crate::matrices::Matrix4;
-use crate::tuples::{Point, Vector};
+use crate::core::matrices::Matrix4;
+use crate::core::tuples::{Point, Vector};
 
 #[derive(Debug, Copy, Clone)]
 pub struct Ray {
@@ -26,9 +26,9 @@ impl Ray {
 
 #[cfg(test)]
 mod tests {
-    use crate::matrices::Matrix4;
-    use crate::rays::Ray;
-    use crate::tuples::{Point, Tuple, Vector};
+    use crate::core::matrices::Matrix4;
+    use crate::rendering::rays::Ray;
+    use crate::core::tuples::{Point, Tuple, Vector};
 
     #[test]
     fn querying_a_ray() {

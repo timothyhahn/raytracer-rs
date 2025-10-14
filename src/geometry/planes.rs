@@ -1,9 +1,9 @@
-use crate::floats::EPSILON;
-use crate::materials::Material;
-use crate::matrices::Matrix4;
-use crate::rays::Ray;
-use crate::shapes::Shape;
-use crate::tuples::{Point, Tuple, Vector};
+use crate::core::floats::EPSILON;
+use crate::scene::materials::Material;
+use crate::core::matrices::Matrix4;
+use crate::rendering::rays::Ray;
+use crate::geometry::shapes::Shape;
+use crate::core::tuples::{Point, Tuple, Vector};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Plane {
@@ -54,8 +54,8 @@ impl Default for Plane {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::objects::{Intersectable, Object};
-    use crate::tuples::{Point, Tuple, Vector};
+    use crate::rendering::objects::{Intersectable, Object};
+    use crate::core::tuples::{Point, Tuple, Vector};
 
     #[test]
     fn plane_normal_constant_everywhere() {

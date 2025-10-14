@@ -1,12 +1,12 @@
-use crate::color::Color;
-use crate::intersections::{Computations, Intersection};
-use crate::lights::PointLight;
-use crate::materials::Material;
-use crate::matrices::Matrix4;
-use crate::objects::{HasMaterial, Intersectable, Object};
-use crate::rays::Ray;
-use crate::sphere::Sphere;
-use crate::tuples::{Point, Tuple};
+use crate::core::color::Color;
+use crate::rendering::intersections::{Computations, Intersection};
+use crate::scene::lights::PointLight;
+use crate::scene::materials::Material;
+use crate::core::matrices::Matrix4;
+use crate::rendering::objects::{HasMaterial, Intersectable, Object};
+use crate::rendering::rays::Ray;
+use crate::geometry::sphere::Sphere;
+use crate::core::tuples::{Point, Tuple};
 
 pub struct World {
     pub objects: Vec<Object>,
@@ -108,16 +108,16 @@ impl Default for World {
 
 #[cfg(test)]
 mod tests {
-    use crate::color::Color;
-    use crate::intersections::Intersection;
-    use crate::lights::PointLight;
-    use crate::materials::Material;
-    use crate::matrices::Matrix4;
-    use crate::objects::{HasMaterial, Intersectable, Object, Transformable};
-    use crate::rays::Ray;
-    use crate::sphere::Sphere;
-    use crate::tuples::{Point, Tuple, Vector};
-    use crate::world::World;
+    use crate::core::color::Color;
+    use crate::rendering::intersections::Intersection;
+    use crate::scene::lights::PointLight;
+    use crate::scene::materials::Material;
+    use crate::core::matrices::Matrix4;
+    use crate::rendering::objects::{HasMaterial, Intersectable, Object, Transformable};
+    use crate::rendering::rays::Ray;
+    use crate::geometry::sphere::Sphere;
+    use crate::core::tuples::{Point, Tuple, Vector};
+    use crate::rendering::world::World;
 
     #[test]
     fn empty_world() {

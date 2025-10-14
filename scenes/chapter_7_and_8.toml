@@ -1,0 +1,90 @@
+# Chapter 7 & 8: Three sphere scene with floor and walls
+
+[camera]
+width = 1000
+height = 500
+fov = 60
+from = [0.0, 1.5, -5.0]
+to = [0.0, 1.0, 0.0]
+up = [0.0, 1.0, 0.0]
+
+[light]
+position = [-10.0, 10.0, -10.0]
+intensity = [1.0, 1.0, 1.0]
+
+# Floor (flattened sphere)
+[[objects]]
+type = "sphere"
+
+[objects.transform]
+scale = [10.0, 0.01, 10.0]
+
+[objects.material]
+color = [1.0, 0.9, 0.9]
+specular = 0.0
+
+# Left wall
+[[objects]]
+type = "sphere"
+
+[objects.transform]
+scale = [10.0, 0.01, 10.0]
+rotate_x = 90.0
+rotate_y = -45.0
+translate = [0.0, 0.0, 5.0]
+
+[objects.material]
+color = [1.0, 0.9, 0.9]
+specular = 0.0
+
+# Right wall
+[[objects]]
+type = "sphere"
+
+[objects.transform]
+scale = [10.0, 0.01, 10.0]
+rotate_x = 90.0
+rotate_y = 45.0
+translate = [0.0, 0.0, 5.0]
+
+[objects.material]
+color = [1.0, 0.9, 0.9]
+specular = 0.0
+
+# Middle sphere
+[[objects]]
+type = "sphere"
+
+[objects.transform]
+translate = [-0.5, 1.0, 0.5]
+
+[objects.material]
+color = [0.1, 1.0, 0.5]
+diffuse = 0.7
+specular = 0.3
+
+# Right sphere
+[[objects]]
+type = "sphere"
+
+[objects.transform]
+scale = [0.5, 0.5, 0.5]
+translate = [1.5, 0.5, -0.5]
+
+[objects.material]
+color = [0.5, 1.0, 0.1]
+diffuse = 0.7
+specular = 0.3
+
+# Left sphere
+[[objects]]
+type = "sphere"
+
+[objects.transform]
+scale = [0.33, 0.33, 0.33]
+translate = [-1.5, 0.33, -0.75]
+
+[objects.material]
+color = [1.0, 0.8, 0.1]
+diffuse = 0.7
+specular = 0.3
