@@ -1,0 +1,89 @@
+# Chapter 10: Pattern Showcase
+# Demonstrates stripe, gradient, ring, and checkers patterns
+
+[camera]
+width = 800
+height = 600
+fov = 60
+from = [0.0, 1.5, -5.0]
+to = [0.0, 1.0, 0.0]
+up = [0.0, 1.0, 0.0]
+
+[light]
+position = [-10.0, 10.0, -10.0]
+intensity = [1.0, 1.0, 1.0]
+
+# Floor - Red and grey checkerboard pattern
+[[objects]]
+type = "plane"
+
+[objects.material]
+ambient = 0.1
+diffuse = 0.9
+specular = 0.0
+
+[objects.material.pattern]
+type = "checkers"
+color_a = [0.8, 0.1, 0.1]
+color_b = [0.5, 0.5, 0.5]
+
+# Large center sphere - Green and light green stripes
+[[objects]]
+type = "sphere"
+
+[objects.transform]
+translate = [-0.3, 1.0, 0.0]
+scale = [1.0, 1.0, 1.0]
+
+[objects.material]
+ambient = 0.1
+diffuse = 0.7
+specular = 0.3
+shininess = 200.0
+
+[objects.material.pattern]
+type = "stripe"
+color_a = [0.1, 0.8, 0.1]
+color_b = [0.5, 1.0, 0.5]
+scale = [0.25, 1.0, 1.0]
+rotate_y = 45
+
+# Medium right sphere - Dark blue to light blue gradient
+[[objects]]
+type = "sphere"
+
+[objects.transform]
+translate = [1.5, 0.75, -0.5]
+scale = [0.75, 0.75, 0.75]
+
+[objects.material]
+ambient = 0.1
+diffuse = 0.7
+specular = 0.3
+shininess = 200.0
+
+[objects.material.pattern]
+type = "gradient"
+color_a = [0.0, 0.0, 0.5]
+color_b = [0.5, 0.8, 1.0]
+scale = [0.5, 1.0, 1.0]
+translate = [-0.5, 0.0, 0.0]
+
+[[objects]]
+type = "sphere"
+
+[objects.transform]
+translate = [-2.0, 0.5, 0.5]
+scale = [0.5, 0.5, 0.5]
+
+[objects.material]
+ambient = 0.1
+diffuse = 0.7
+specular = 0.3
+shininess = 200.0
+
+[objects.material.pattern]
+type = "ring"
+color_a = [0.5, 0.0, 0.1]
+color_b = [1.0, 0.7, 0.8]
+scale = [0.3, 0.3, 0.3]

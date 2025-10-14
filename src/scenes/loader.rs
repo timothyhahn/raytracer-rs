@@ -4,10 +4,11 @@ use crate::core::tuples::{Point, Tuple, Vector};
 use crate::geometry::planes::Plane;
 use crate::geometry::sphere::Sphere;
 use crate::rendering::camera::Camera;
-use crate::rendering::objects::Object;
+use crate::rendering::objects::{Object, Transformable};
 use crate::rendering::world::World;
 use crate::scene::lights::PointLight;
 use crate::scene::materials::Material;
+use crate::scene::patterns::Pattern;
 use crate::scene::transformations::view_transform;
 use serde::Deserialize;
 use std::f64::consts::PI;
@@ -53,6 +54,7 @@ pub enum ObjectConfig {
 
 #[derive(Deserialize)]
 pub struct MaterialConfig {
+    #[serde(default = "default_white")]
     pub color: [f64; 3],
     #[serde(default = "default_ambient")]
     pub ambient: f64,
@@ -62,8 +64,45 @@ pub struct MaterialConfig {
     pub specular: f64,
     #[serde(default = "default_shininess")]
     pub shininess: f64,
+    pub pattern: Option<PatternConfig>,
 }
 
+#[derive(Deserialize)]
+#[serde(tag = "type")]
+pub enum PatternConfig {
+    #[serde(rename = "stripe")]
+    Stripe {
+        color_a: [f64; 3],
+        color_b: [f64; 3],
+        #[serde(flatten)]
+        transform: Option<TransformConfig>,
+    },
+    #[serde(rename = "gradient")]
+    Gradient {
+        color_a: [f64; 3],
+        color_b: [f64; 3],
+        #[serde(flatten)]
+        transform: Option<TransformConfig>,
+    },
+    #[serde(rename = "ring")]
+    Ring {
+        color_a: [f64; 3],
+        color_b: [f64; 3],
+        #[serde(flatten)]
+        transform: Option<TransformConfig>,
+    },
+    #[serde(rename = "checkers")]
+    Checkers {
+        color_a: [f64; 3],
+        color_b: [f64; 3],
+        #[serde(flatten)]
+        transform: Option<TransformConfig>,
+    },
+}
+
+fn default_white() -> [f64; 3] {
+    [1.0, 1.0, 1.0]
+}
 fn default_ambient() -> f64 {
     0.1
 }
@@ -77,7 +116,7 @@ fn default_shininess() -> f64 {
     200.0
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct TransformConfig {
     #[serde(default)]
     pub translate: Option<[f64; 3]>,
@@ -198,14 +237,64 @@ fn build_transform(config: &Option<TransformConfig>) -> Matrix4 {
 
 fn build_material(config: &Option<MaterialConfig>) -> Material {
     if let Some(mat_config) = config {
-        Material::new(
+        let mut material = Material::new(
             Color::new(mat_config.color[0], mat_config.color[1], mat_config.color[2]),
             mat_config.ambient,
             mat_config.diffuse,
             mat_config.specular,
             mat_config.shininess,
-        )
+        );
+
+        // Apply pattern if specified
+        if let Some(pattern_config) = &mat_config.pattern {
+            material.pattern = Some(build_pattern(pattern_config));
+        }
+
+        material
     } else {
         Material::default()
     }
+}
+
+fn build_pattern(config: &PatternConfig) -> Pattern {
+    let mut pattern = match config {
+        PatternConfig::Stripe { color_a, color_b, .. } => {
+            Pattern::stripe(
+                Color::new(color_a[0], color_a[1], color_a[2]),
+                Color::new(color_b[0], color_b[1], color_b[2]),
+            )
+        }
+        PatternConfig::Gradient { color_a, color_b, .. } => {
+            Pattern::gradient(
+                Color::new(color_a[0], color_a[1], color_a[2]),
+                Color::new(color_b[0], color_b[1], color_b[2]),
+            )
+        }
+        PatternConfig::Ring { color_a, color_b, .. } => {
+            Pattern::ring(
+                Color::new(color_a[0], color_a[1], color_a[2]),
+                Color::new(color_b[0], color_b[1], color_b[2]),
+            )
+        }
+        PatternConfig::Checkers { color_a, color_b, .. } => {
+            Pattern::checkers(
+                Color::new(color_a[0], color_a[1], color_a[2]),
+                Color::new(color_b[0], color_b[1], color_b[2]),
+            )
+        }
+    };
+
+    // Apply pattern transformation
+    let transform_config = match config {
+        PatternConfig::Stripe { transform, .. } => transform,
+        PatternConfig::Gradient { transform, .. } => transform,
+        PatternConfig::Ring { transform, .. } => transform,
+        PatternConfig::Checkers { transform, .. } => transform,
+    };
+
+    if let Some(transform) = transform_config {
+        pattern.set_transform(build_transform(&Some(transform.clone())));
+    }
+
+    pattern
 }

@@ -114,6 +114,17 @@ fn draw_chapter_9_plane_scene_from_scene() {
     let _ = canvas.to_jpeg("outputs/chapter_9_plane_scene.jpg");
 }
 
+fn draw_chapter_10_patterns_from_scene() {
+    println!("Drawing chapter 10 pattern showcase from scene...");
+    let scene = SceneFile::from_file("scenes/chapter_10.toml")
+        .expect("Failed to load chapter 10 scene");
+    let camera = scene.build_camera();
+    let world = scene.build_world();
+    let canvas = camera.render(world);
+    let _ = canvas.to_ppm("outputs/chapter_10_patterns.ppm");
+    let _ = canvas.to_jpeg("outputs/chapter_10_patterns.jpg");
+}
+
 fn main() {
     draw_chapter_2_arc();
     draw_chapter_4_clock();
@@ -121,4 +132,5 @@ fn main() {
     draw_chapter_6_sphere_from_scene();
     draw_chapter_7_and_8_world_from_scene();
     draw_chapter_9_plane_scene_from_scene();
+    draw_chapter_10_patterns_from_scene();
 }

@@ -132,7 +132,14 @@ mod tests {
         let eye_vector = Vector::new(0.0, 0.0, -1.0);
         let normal_vector = Vector::new(0.0, 0.0, -1.0);
         let light = PointLight::new(Point::new(0.0, 0.0, -10.0), Color::white());
-        let result = material.lighting(&Object::sphere(), light, position, eye_vector, normal_vector, false);
+        let result = material.lighting(
+            &Object::sphere(),
+            light,
+            position,
+            eye_vector,
+            normal_vector,
+            false,
+        );
         assert_eq!(result, Color::new(1.9, 1.9, 1.9));
     }
 
@@ -143,7 +150,14 @@ mod tests {
         let eye_vector = Vector::new(0.0, 2.0_f64.sqrt() / 2.0, -(2.0_f64.sqrt()) / 2.0);
         let normal_vector = Vector::new(0.0, 0.0, -1.0);
         let light = PointLight::new(Point::new(0.0, 0.0, -10.0), Color::white());
-        let result = material.lighting(&Object::sphere(), light, position, eye_vector, normal_vector, false);
+        let result = material.lighting(
+            &Object::sphere(),
+            light,
+            position,
+            eye_vector,
+            normal_vector,
+            false,
+        );
         assert_eq!(result, Color::new(1.0, 1.0, 1.0));
     }
 
@@ -154,7 +168,14 @@ mod tests {
         let eye_vector = Vector::new(0.0, 0.0, -1.0);
         let normal_vector = Vector::new(0.0, 0.0, -1.0);
         let light = PointLight::new(Point::new(0.0, 10.0, -10.0), Color::white());
-        let result = material.lighting(&Object::sphere(), light, position, eye_vector, normal_vector, false);
+        let result = material.lighting(
+            &Object::sphere(),
+            light,
+            position,
+            eye_vector,
+            normal_vector,
+            false,
+        );
         assert_eq!(result, Color::new(0.7364, 0.7364, 0.7364));
     }
 
@@ -165,7 +186,14 @@ mod tests {
         let eye_vector = Vector::new(0.0, -(2.0_f64.sqrt()) / 2.0, -(2.0_f64.sqrt()) / 2.0);
         let normal_vector = Vector::new(0.0, 0.0, -1.0);
         let light = PointLight::new(Point::new(0.0, 10.0, -10.0), Color::white());
-        let result = material.lighting(&Object::sphere(), light, position, eye_vector, normal_vector, false);
+        let result = material.lighting(
+            &Object::sphere(),
+            light,
+            position,
+            eye_vector,
+            normal_vector,
+            false,
+        );
         assert_eq!(result, Color::new(1.6364, 1.6364, 1.6364));
     }
 
@@ -176,7 +204,14 @@ mod tests {
         let eye_vector = Vector::new(0.0, 0.0, -1.0);
         let normal_vector = Vector::new(0.0, 0.0, -1.0);
         let light = PointLight::new(Point::new(0.0, 0.0, 10.0), Color::white());
-        let result = material.lighting(&Object::sphere(), light, position, eye_vector, normal_vector, false);
+        let result = material.lighting(
+            &Object::sphere(),
+            light,
+            position,
+            eye_vector,
+            normal_vector,
+            false,
+        );
         assert_eq!(result, Color::new(0.1, 0.1, 0.1));
     }
 
