@@ -38,6 +38,7 @@ impl World {
     pub fn shade_hit(&self, comps: Computations) -> Color {
         let in_shadow = self.is_shadowed(comps.over_point);
         comps.object.material().lighting(
+            &comps.object,
             self.light_source.unwrap(),
             comps.point,
             comps.eye_vector,

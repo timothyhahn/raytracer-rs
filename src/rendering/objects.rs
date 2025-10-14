@@ -32,6 +32,18 @@ pub enum Object {
     Plane(Plane),
 }
 
+impl Object {
+    /// Create a new default sphere at the origin with identity transformation.
+    pub fn sphere() -> Self {
+        Object::Sphere(Sphere::new())
+    }
+
+    /// Create a new default plane with identity transformation.
+    pub fn plane() -> Self {
+        Object::Plane(Plane::new())
+    }
+}
+
 impl Intersectable for Object {
     /// Abstract intersect method that handles transformation and delegates
     /// to the shape's local_intersect method.

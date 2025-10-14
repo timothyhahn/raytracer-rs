@@ -1,7 +1,9 @@
+use super::lights::PointLight;
+use super::patterns::Pattern;
 use crate::core::color::Color;
 use crate::core::floats::float_equal;
-use super::lights::PointLight;
 use crate::core::tuples::{Point, Vector};
+use crate::rendering::objects::Object;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Material {
@@ -10,6 +12,7 @@ pub struct Material {
     pub diffuse: f64,
     pub specular: f64,
     pub shininess: f64,
+    pub pattern: Option<Pattern>,
 }
 
 impl Material {
@@ -29,19 +32,29 @@ impl Material {
             diffuse,
             specular,
             shininess,
+            pattern: None,
         }
     }
 
     pub fn lighting(
         &self,
+        object: &Object,
         light: PointLight,
         point: Point,
         eye_vector: Vector,
         normal_vector: Vector,
         in_shadow: bool,
     ) -> Color {
+        // Use pattern if one is set.
+        let color = if self.pattern.is_some() {
+            let pattern = self.pattern.as_ref().unwrap();
+            pattern.color_at_object(object, point)
+        } else {
+            self.color
+        };
+
         // Combine surface color with the light's color/intensity
-        let effective_color = self.color * light.intensity;
+        let effective_color = color * light.intensity;
 
         // Find the direction to the light source
         let light_vector = (light.position - point).normalize();
@@ -95,10 +108,12 @@ impl PartialEq for Material {
 
 #[cfg(test)]
 mod tests {
-    use crate::core::color::Color;
-    use crate::scene::lights::PointLight;
     use super::Material;
+    use crate::core::color::Color;
     use crate::core::tuples::{Point, Tuple, Vector};
+    use crate::rendering::objects::Object;
+    use crate::scene::lights::PointLight;
+    use crate::scene::patterns::Pattern;
 
     #[test]
     fn default_material() {
@@ -117,7 +132,7 @@ mod tests {
         let eye_vector = Vector::new(0.0, 0.0, -1.0);
         let normal_vector = Vector::new(0.0, 0.0, -1.0);
         let light = PointLight::new(Point::new(0.0, 0.0, -10.0), Color::white());
-        let result = material.lighting(light, position, eye_vector, normal_vector, false);
+        let result = material.lighting(&Object::sphere(), light, position, eye_vector, normal_vector, false);
         assert_eq!(result, Color::new(1.9, 1.9, 1.9));
     }
 
@@ -128,7 +143,7 @@ mod tests {
         let eye_vector = Vector::new(0.0, 2.0_f64.sqrt() / 2.0, -(2.0_f64.sqrt()) / 2.0);
         let normal_vector = Vector::new(0.0, 0.0, -1.0);
         let light = PointLight::new(Point::new(0.0, 0.0, -10.0), Color::white());
-        let result = material.lighting(light, position, eye_vector, normal_vector, false);
+        let result = material.lighting(&Object::sphere(), light, position, eye_vector, normal_vector, false);
         assert_eq!(result, Color::new(1.0, 1.0, 1.0));
     }
 
@@ -139,7 +154,7 @@ mod tests {
         let eye_vector = Vector::new(0.0, 0.0, -1.0);
         let normal_vector = Vector::new(0.0, 0.0, -1.0);
         let light = PointLight::new(Point::new(0.0, 10.0, -10.0), Color::white());
-        let result = material.lighting(light, position, eye_vector, normal_vector, false);
+        let result = material.lighting(&Object::sphere(), light, position, eye_vector, normal_vector, false);
         assert_eq!(result, Color::new(0.7364, 0.7364, 0.7364));
     }
 
@@ -150,7 +165,7 @@ mod tests {
         let eye_vector = Vector::new(0.0, -(2.0_f64.sqrt()) / 2.0, -(2.0_f64.sqrt()) / 2.0);
         let normal_vector = Vector::new(0.0, 0.0, -1.0);
         let light = PointLight::new(Point::new(0.0, 10.0, -10.0), Color::white());
-        let result = material.lighting(light, position, eye_vector, normal_vector, false);
+        let result = material.lighting(&Object::sphere(), light, position, eye_vector, normal_vector, false);
         assert_eq!(result, Color::new(1.6364, 1.6364, 1.6364));
     }
 
@@ -161,7 +176,7 @@ mod tests {
         let eye_vector = Vector::new(0.0, 0.0, -1.0);
         let normal_vector = Vector::new(0.0, 0.0, -1.0);
         let light = PointLight::new(Point::new(0.0, 0.0, 10.0), Color::white());
-        let result = material.lighting(light, position, eye_vector, normal_vector, false);
+        let result = material.lighting(&Object::sphere(), light, position, eye_vector, normal_vector, false);
         assert_eq!(result, Color::new(0.1, 0.1, 0.1));
     }
 
@@ -173,6 +188,7 @@ mod tests {
         let light = PointLight::new(Point::new(0.0, 0.0, -10.0), Color::white());
         let in_shadow = true;
         let result = material.lighting(
+            &Object::sphere(),
             light,
             Point::new(0.0, 0.0, 0.0),
             eye_vector,
@@ -180,5 +196,35 @@ mod tests {
             in_shadow,
         );
         assert_eq!(result, Color::new(0.1, 0.1, 0.1));
+    }
+
+    #[test]
+    fn lighting_with_pattern_applied() {
+        let mut material = Material::default();
+        material.pattern = Some(Pattern::stripe(Color::white(), Color::black()));
+        material.ambient = 1.0;
+        material.diffuse = 0.0;
+        material.specular = 0.0;
+        let eye_vector = Vector::new(0.0, 0.0, -1.0);
+        let normal_vector = Vector::new(0.0, 0.0, -1.0);
+        let light = PointLight::new(Point::new(0.0, 0.0, -10.0), Color::white());
+        let c1 = material.lighting(
+            &Object::sphere(),
+            light,
+            Point::new(0.9, 0.0, 0.0),
+            eye_vector,
+            normal_vector,
+            false,
+        );
+        let c2 = material.lighting(
+            &Object::sphere(),
+            light,
+            Point::new(1.1, 0.0, 0.0),
+            eye_vector,
+            normal_vector,
+            false,
+        );
+        assert_eq!(c1, Color::white());
+        assert_eq!(c2, Color::black());
     }
 }
