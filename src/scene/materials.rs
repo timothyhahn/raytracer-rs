@@ -318,11 +318,13 @@ mod tests {
 
     #[test]
     fn lighting_with_pattern_applied() {
-        let mut material = Material::default();
-        material.pattern = Some(Pattern::stripe(Color::white(), Color::black()));
-        material.ambient = 1.0;
-        material.diffuse = 0.0;
-        material.specular = 0.0;
+        let material = Material {
+            pattern: Some(Pattern::stripe(Color::white(), Color::black())),
+            ambient: 1.0,
+            diffuse: 0.0,
+            specular: 0.0,
+            ..Default::default()
+        };
         let eye_vector = Vector::new(0.0, 0.0, -1.0);
         let normal_vector = Vector::new(0.0, 0.0, -1.0);
         let light = PointLight::new(Point::new(0.0, 0.0, -10.0), Color::white());

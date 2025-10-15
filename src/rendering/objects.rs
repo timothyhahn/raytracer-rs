@@ -1,5 +1,6 @@
 use crate::core::matrices::Matrix4;
 use crate::core::tuples::{Point, Vector};
+use crate::geometry::cubes::Cube;
 use crate::geometry::planes::Plane;
 use crate::geometry::shapes::Shape;
 use crate::geometry::sphere::Sphere;
@@ -30,6 +31,7 @@ pub trait Transformable {
 pub enum Object {
     Sphere(Sphere),
     Plane(Plane),
+    Cube(Cube),
 }
 
 impl Object {
@@ -41,6 +43,11 @@ impl Object {
     /// Create a new default plane with identity transformation.
     pub fn plane() -> Self {
         Object::Plane(Plane::new())
+    }
+
+    /// Create a new default cube with identity transformation.
+    pub fn cube() -> Self {
+        Object::Cube(Cube::new())
     }
 }
 
@@ -59,6 +66,7 @@ impl Intersectable for Object {
         match self {
             Object::Sphere(s) => s.local_intersect(local_ray),
             Object::Plane(p) => p.local_intersect(local_ray),
+            Object::Cube(c) => c.local_intersect(local_ray),
         }
     }
 
@@ -84,6 +92,7 @@ impl Intersectable for Object {
         let local_normal = match self {
             Object::Sphere(s) => s.local_normal_at(local_point),
             Object::Plane(p) => p.local_normal_at(local_point),
+            Object::Cube(c) => c.local_normal_at(local_point),
         };
 
         // Transform normal to world space
@@ -99,6 +108,7 @@ impl HasMaterial for Object {
         match self {
             Object::Sphere(s) => s.material,
             Object::Plane(p) => p.material,
+            Object::Cube(c) => c.material,
         }
     }
 
@@ -106,6 +116,7 @@ impl HasMaterial for Object {
         match self {
             Object::Sphere(s) => s.material = material,
             Object::Plane(p) => p.material = material,
+            Object::Cube(c) => c.material = material,
         }
     }
 }
@@ -115,6 +126,7 @@ impl Transformable for Object {
         match self {
             Object::Sphere(s) => s.transformation,
             Object::Plane(p) => p.transformation,
+            Object::Cube(c) => c.transformation,
         }
     }
 
@@ -122,6 +134,7 @@ impl Transformable for Object {
         match self {
             Object::Sphere(s) => s.transformation = transformation,
             Object::Plane(p) => p.transformation = transformation,
+            Object::Cube(c) => c.transformation = transformation,
         }
     }
 }

@@ -1,6 +1,7 @@
 use crate::core::color::Color;
 use crate::core::matrices::Matrix4;
 use crate::core::tuples::{Point, Tuple, Vector};
+use crate::geometry::cubes::Cube;
 use crate::geometry::planes::Plane;
 use crate::geometry::sphere::Sphere;
 use crate::rendering::camera::Camera;
@@ -47,6 +48,11 @@ pub enum ObjectConfig {
     },
     #[serde(rename = "plane")]
     Plane {
+        transform: Option<TransformConfig>,
+        material: Option<MaterialConfig>,
+    },
+    #[serde(rename = "cube")]
+    Cube {
         transform: Option<TransformConfig>,
         material: Option<MaterialConfig>,
     },
@@ -216,6 +222,17 @@ fn build_object(config: &ObjectConfig) -> Object {
             let transformation = build_transform(transform);
             let mat = build_material(material);
             Object::Plane(Plane {
+                transformation,
+                material: mat,
+            })
+        }
+        ObjectConfig::Cube {
+            transform,
+            material,
+        } => {
+            let transformation = build_transform(transform);
+            let mat = build_material(material);
+            Object::Cube(Cube {
                 transformation,
                 material: mat,
             })

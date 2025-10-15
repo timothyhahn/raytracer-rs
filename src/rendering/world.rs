@@ -489,9 +489,9 @@ mod tests {
 
         let shape = world.objects.first().unwrap();
         let ray = Ray::new(Point::new(0.0, 0.0, -5.0), Vector::new(0.0, 0.0, 1.0));
-        let intersections = vec![
-            Intersection::new(4.0, &shape),
-            Intersection::new(6.0, &shape),
+        let intersections = [
+            Intersection::new(4.0, shape),
+            Intersection::new(6.0, shape),
         ];
         let comps = intersections[0].prepare_computations(ray);
         let color = world.refracted_color(comps);

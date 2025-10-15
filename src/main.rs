@@ -136,6 +136,17 @@ fn draw_chapter_11_reflections_from_scene() {
     let _ = canvas.to_jpeg("outputs/chapter_11_reflections.jpg");
 }
 
+fn draw_chapter_12_cubes_from_scene() {
+    println!("Drawing chapter 12 cube room scene from scene...");
+    let scene =
+        SceneFile::from_file("scenes/chapter_12.toml").expect("Failed to load chapter 12 scene");
+    let camera = scene.build_camera();
+    let world = scene.build_world();
+    let canvas = camera.render(world);
+    let _ = canvas.to_ppm("outputs/chapter_12_cubes.ppm");
+    let _ = canvas.to_jpeg("outputs/chapter_12_cubes.jpg");
+}
+
 fn main() {
     draw_chapter_2_arc();
     draw_chapter_4_clock();
@@ -145,4 +156,5 @@ fn main() {
     draw_chapter_9_plane_scene_from_scene();
     draw_chapter_10_patterns_from_scene();
     draw_chapter_11_reflections_from_scene();
+    draw_chapter_12_cubes_from_scene();
 }
