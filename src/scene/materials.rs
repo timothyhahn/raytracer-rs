@@ -13,31 +13,110 @@ pub struct Material {
     pub specular: f64,
     pub shininess: f64,
     pub reflectivity: f64,
+    pub transparency: f64,
+    pub refractive_index: f64,
     pub pattern: Option<Pattern>,
 }
 
-impl Material {
-    pub fn new(
-        color: Color,
-        ambient: f64,
-        diffuse: f64,
-        specular: f64,
-        shininess: f64,
-        reflectivity: f64,
-        pattern: Option<Pattern>,
-    ) -> Material {
-        if ambient < 0.0 || diffuse < 0.0 || specular < 0.0 || shininess < 0.0 {
+pub struct MaterialBuilder {
+    color: Color,
+    ambient: f64,
+    diffuse: f64,
+    specular: f64,
+    shininess: f64,
+    reflectivity: f64,
+    transparency: f64,
+    refractive_index: f64,
+    pattern: Option<Pattern>,
+}
+
+impl MaterialBuilder {
+    pub fn new() -> Self {
+        MaterialBuilder {
+            color: Color::white(),
+            ambient: 0.1,
+            diffuse: 0.9,
+            specular: 0.9,
+            shininess: 200.0,
+            reflectivity: 0.0,
+            transparency: 0.0,
+            refractive_index: 1.0,
+            pattern: None,
+        }
+    }
+
+    pub fn color(mut self, color: Color) -> Self {
+        self.color = color;
+        self
+    }
+
+    pub fn ambient(mut self, ambient: f64) -> Self {
+        self.ambient = ambient;
+        self
+    }
+
+    pub fn diffuse(mut self, diffuse: f64) -> Self {
+        self.diffuse = diffuse;
+        self
+    }
+
+    pub fn specular(mut self, specular: f64) -> Self {
+        self.specular = specular;
+        self
+    }
+
+    pub fn shininess(mut self, shininess: f64) -> Self {
+        self.shininess = shininess;
+        self
+    }
+
+    pub fn reflectivity(mut self, reflectivity: f64) -> Self {
+        self.reflectivity = reflectivity;
+        self
+    }
+
+    pub fn transparency(mut self, transparency: f64) -> Self {
+        self.transparency = transparency;
+        self
+    }
+
+    pub fn refractive_index(mut self, refractive_index: f64) -> Self {
+        self.refractive_index = refractive_index;
+        self
+    }
+
+    pub fn pattern(mut self, pattern: Pattern) -> Self {
+        self.pattern = Some(pattern);
+        self
+    }
+
+    pub fn build(self) -> Material {
+        if self.ambient < 0.0 || self.diffuse < 0.0 || self.specular < 0.0 || self.shininess < 0.0 {
             panic!("Material values must be positive");
         }
         Material {
-            color,
-            ambient,
-            diffuse,
-            specular,
-            shininess,
-            reflectivity,
-            pattern,
+            color: self.color,
+            ambient: self.ambient,
+            diffuse: self.diffuse,
+            specular: self.specular,
+            shininess: self.shininess,
+            reflectivity: self.reflectivity,
+            transparency: self.transparency,
+            refractive_index: self.refractive_index,
+            pattern: self.pattern,
         }
+    }
+}
+
+impl Default for MaterialBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl Material {
+    pub fn builder() -> MaterialBuilder {
+        MaterialBuilder::new()
     }
 
     pub fn lighting(
@@ -95,7 +174,7 @@ impl Material {
 
 impl Default for Material {
     fn default() -> Material {
-        Material::new(Color::white(), 0.1, 0.9, 0.9, 200.0, 0.0, None)
+        Material::builder().build()
     }
 }
 

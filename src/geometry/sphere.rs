@@ -17,6 +17,16 @@ impl Sphere {
             material: Material::default(),
         }
     }
+
+    pub fn glass() -> Sphere {
+        Sphere {
+            transformation: Matrix4::identity(),
+            material: Material::builder()
+                .transparency(1.0)
+                .refractive_index(1.5)
+                .build(),
+        }
+    }
 }
 
 impl Shape for Sphere {
@@ -162,5 +172,12 @@ mod tests {
             3.0_f64.sqrt() / 3.0,
         ));
         assert_eq!(normal, normal.normalize());
+    }
+
+    #[test]
+    fn glass_sphere() {
+        let sphere = Sphere::glass();
+        assert_eq!(sphere.material.transparency, 1.0);
+        assert_eq!(sphere.material.refractive_index, 1.5);
     }
 }

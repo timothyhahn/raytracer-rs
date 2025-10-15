@@ -1,6 +1,6 @@
-use crate::core::floats::EPSILON;
+use crate::core::floats::{float_equal, EPSILON};
 use crate::core::tuples::{Point, Vector};
-use crate::rendering::objects::{Intersectable, Object};
+use crate::rendering::objects::{HasMaterial, Intersectable, Object};
 use crate::rendering::rays::Ray;
 
 #[derive(Debug, Copy, Clone)]
@@ -18,6 +18,9 @@ pub struct Computations {
     pub reflect_vector: Vector,
     pub inside: bool,
     pub over_point: Point,
+    pub under_point: Point,
+    pub n1: f64,
+    pub n2: f64,
 }
 
 impl Intersection<'_> {
@@ -36,6 +39,15 @@ impl Intersection<'_> {
     }
 
     pub fn prepare_computations(&self, ray: Ray) -> Computations {
+        self.prepare_computations_for_intersections(ray, &[*self])
+    }
+
+    pub fn prepare_computations_for_intersections(
+        &self,
+        ray: Ray,
+        intersections: &[Intersection],
+    ) -> Computations {
+        // Basic properties
         let normal_vector = self.object.normal_at(ray.position(self.t));
         let eye_vector = -ray.direction;
 
@@ -46,10 +58,50 @@ impl Intersection<'_> {
         };
 
         let reflect_vector = ray.direction.reflect(&normal_vector);
-
         let point = ray.position(self.t);
-
         let over_point = point + normal_vector * EPSILON;
+        let under_point = point - normal_vector * EPSILON;
+
+        // Track which objects we're currently inside
+        let mut containers: Vec<&Object> = Vec::new();
+        let mut n1 = 1.0;
+        let mut n2 = 1.0;
+
+        for intersection in intersections {
+            // Check if this intersection is the one we're computing for
+            let is_hit = std::ptr::eq(intersection.object, self.object)
+                && float_equal(intersection.t, self.t);
+
+            // If this is the hit, n1 is the refractive index of the last container
+            if is_hit {
+                n1 = containers
+                    .last()
+                    .map(|obj| obj.material().refractive_index)
+                    .unwrap_or(1.0);
+            }
+
+            // Update containers: remove if exiting, add if entering
+            if let Some(index) = containers
+                .iter()
+                .position(|obj| std::ptr::eq(*obj, intersection.object))
+            {
+                // Exiting this object
+                containers.remove(index);
+            } else {
+                // Entering this object
+                containers.push(intersection.object);
+            }
+
+            // If this is the hit, n2 is the refractive index after updating containers
+            if is_hit {
+                n2 = containers
+                    .last()
+                    .map(|obj| obj.material().refractive_index)
+                    .unwrap_or(1.0);
+                break; // We found our intersection, no need to continue
+            }
+        }
+
         Computations {
             time: self.t,
             object: *self.object,
@@ -59,18 +111,39 @@ impl Intersection<'_> {
             reflect_vector,
             inside,
             over_point,
+            under_point,
+            n1,
+            n2,
         }
+    }
+}
+
+impl Computations {
+    // https://en.wikipedia.org/wiki/Schlick%27s_approximation
+    pub fn schlick(&self) -> f64 {
+        let mut cos = self.eye_vector.dot(&self.normal_vector);
+        if self.n1 > self.n2 {
+            let n = self.n1 / self.n2;
+            let sin_2t = n.powi(2) * (1.0 - cos.powi(2));
+            if sin_2t > 1.0 {
+                return 1.0;
+            }
+
+            cos = (1.0 - sin_2t).sqrt();
+        }
+        let r0 = ((self.n1 - self.n2) / (self.n1 + self.n2)).powi(2);
+        r0 + (1.0 - r0) * (1.0 - cos).powi(5)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::core::floats::EPSILON;
+    use crate::core::floats::{float_equal, EPSILON};
     use crate::core::matrices::Matrix4;
     use crate::core::tuples::{Point, Tuple, Vector};
     use crate::geometry::sphere::Sphere;
     use crate::rendering::intersections::Intersection;
-    use crate::rendering::objects::{Object, Transformable};
+    use crate::rendering::objects::{HasMaterial, Object, Transformable};
     use crate::rendering::rays::Ray;
 
     #[test]
@@ -198,6 +271,18 @@ mod tests {
     }
 
     #[test]
+    fn hit_should_offset_the_point_under() {
+        let ray = Ray::new(Point::new(0.0, 0.0, -5.0), Vector::new(0.0, 0.0, 1.0));
+        let sphere = Sphere::glass();
+        let mut shape = Object::Sphere(sphere);
+        shape.set_transform(Matrix4::translate(0.0, 0.0, 1.0));
+        let intersection = Intersection::new(5.0, &shape);
+        let computations = intersection.prepare_computations(ray);
+        assert!(computations.under_point.z > EPSILON / 2.0);
+        assert!(computations.point.z < computations.under_point.z);
+    }
+
+    #[test]
     fn precomputing_the_reflection_vector() {
         let shape = Object::plane();
         let ray = Ray::new(
@@ -210,5 +295,96 @@ mod tests {
             computations.reflect_vector,
             Vector::new(0.0, 2_f64.sqrt() / 2.0, 2_f64.sqrt() / 2.0)
         );
+    }
+
+    #[test]
+    fn finding_n1_and_n2_at_various_intersections() {
+        let mut a = Object::Sphere(Sphere::glass());
+        a.set_transform(Matrix4::scale(2.0, 2.0, 2.0));
+        let mut a_mat = a.material();
+        a_mat.refractive_index = 1.5;
+        a.set_material(a_mat);
+
+        let mut b = Object::Sphere(Sphere::glass());
+        b.set_transform(Matrix4::translate(0.0, 0.0, -0.25));
+        let mut b_mat = b.material();
+        b_mat.refractive_index = 2.0;
+        b.set_material(b_mat);
+
+        let mut c = Object::Sphere(Sphere::glass());
+        c.set_transform(Matrix4::translate(0.0, 0.0, 0.25));
+        let mut c_mat = c.material();
+        c_mat.refractive_index = 2.5;
+        c.set_material(c_mat);
+
+        let ray = Ray::new(Point::new(0.0, 0.0, -4.0), Vector::new(0.0, 0.0, 1.0));
+        let intersections = vec![
+            Intersection::new(2.0, &a),
+            Intersection::new(2.75, &b),
+            Intersection::new(3.25, &c),
+            Intersection::new(4.75, &b),
+            Intersection::new(5.25, &c),
+            Intersection::new(6.0, &a),
+        ];
+
+        let expected_values = vec![
+            (1.0, 1.5),
+            (1.5, 2.0),
+            (2.0, 2.5),
+            (2.5, 2.5),
+            (2.5, 1.5),
+            (1.5, 1.0),
+        ];
+        intersections
+            .iter()
+            .zip(expected_values)
+            .for_each(|(intersection, (n1, n2))| {
+                let computations =
+                    intersection.prepare_computations_for_intersections(ray, &intersections);
+                assert_eq!(computations.n1, n1);
+                assert_eq!(computations.n2, n2);
+            });
+    }
+
+    #[test]
+    pub fn shlick_approximation_under_total_reflection() {
+        let shape = Object::Sphere(Sphere::glass());
+        let ray = Ray::new(
+            Point::new(0.0, 0.0, 2_f64.sqrt() / 2.0),
+            Vector::new(0.0, 1.0, 0.0),
+        );
+        let intersections = [
+            Intersection::new(-2_f64.sqrt() / 2.0, &shape),
+            Intersection::new(2_f64.sqrt() / 2.0, &shape),
+        ];
+        let computations =
+            intersections[1].prepare_computations_for_intersections(ray, &intersections);
+        let reflectance = computations.schlick();
+        assert_eq!(reflectance, 1.0);
+    }
+
+    #[test]
+    pub fn shlick_approximation_with_perpendicular_viewing_angle() {
+        let shape = Object::Sphere(Sphere::glass());
+        let ray = Ray::new(Point::new(0.0, 0.0, 0.0), Vector::new(0.0, 1.0, 0.0));
+        let intersections = [
+            Intersection::new(-1.0, &shape),
+            Intersection::new(1.0, &shape),
+        ];
+        let computations =
+            intersections[1].prepare_computations_for_intersections(ray, &intersections);
+        let reflectance = computations.schlick();
+        assert!(float_equal(reflectance, 0.04));
+    }
+
+    #[test]
+    pub fn shlick_approximation_with_small_angle_and_n2_lt_n1() {
+        let shape = Object::Sphere(Sphere::glass());
+        let ray = Ray::new(Point::new(0.0, 0.99, -2.0), Vector::new(0.0, 0.0, 1.0));
+        let intersections = [Intersection::new(1.8589, &shape)];
+        let computations =
+            intersections[0].prepare_computations_for_intersections(ray, &intersections);
+        let reflectance = computations.schlick();
+        assert!(float_equal(reflectance, 0.48873));
     }
 }

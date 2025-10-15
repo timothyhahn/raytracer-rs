@@ -66,6 +66,10 @@ pub struct MaterialConfig {
     pub shininess: f64,
     #[serde(default = "default_reflectivity")]
     pub reflectivity: f64,
+    #[serde(default = "default_transparency")]
+    pub transparency: f64,
+    #[serde(default = "default_refractive_index")]
+    pub refractive_index: f64,
     pub pattern: Option<PatternConfig>,
 }
 
@@ -120,6 +124,14 @@ fn default_shininess() -> f64 {
 
 fn default_reflectivity() -> f64 {
     0.0
+}
+
+fn default_transparency() -> f64 {
+    0.0
+}
+
+fn default_refractive_index() -> f64 {
+    1.0
 }
 
 #[derive(Deserialize, Clone)]
@@ -239,21 +251,25 @@ fn build_transform(config: &Option<TransformConfig>) -> Matrix4 {
 
 fn build_material(config: &Option<MaterialConfig>) -> Material {
     if let Some(mat_config) = config {
-        let pattern = mat_config.pattern.as_ref().map(build_pattern);
-
-        Material::new(
-            Color::new(
+        let mut builder = Material::builder()
+            .color(Color::new(
                 mat_config.color[0],
                 mat_config.color[1],
                 mat_config.color[2],
-            ),
-            mat_config.ambient,
-            mat_config.diffuse,
-            mat_config.specular,
-            mat_config.shininess,
-            mat_config.reflectivity,
-            pattern,
-        )
+            ))
+            .ambient(mat_config.ambient)
+            .diffuse(mat_config.diffuse)
+            .specular(mat_config.specular)
+            .shininess(mat_config.shininess)
+            .reflectivity(mat_config.reflectivity)
+            .transparency(mat_config.transparency)
+            .refractive_index(mat_config.refractive_index);
+
+        if let Some(pattern) = mat_config.pattern.as_ref().map(build_pattern) {
+            builder = builder.pattern(pattern);
+        }
+
+        builder.build()
     } else {
         Material::default()
     }
