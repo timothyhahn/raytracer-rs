@@ -139,7 +139,10 @@ mod tests {
         let c = Canvas::new(10, 20);
         assert_eq!(c.width, 10);
         assert_eq!(c.height, 20);
-        assert!(c.pixels.iter().all(|pixel| *pixel == Color::new(0.0, 0.0, 0.0)));
+        assert!(c
+            .pixels
+            .iter()
+            .all(|pixel| *pixel == Color::new(0.0, 0.0, 0.0)));
     }
 
     #[test]

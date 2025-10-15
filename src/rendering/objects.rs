@@ -1,6 +1,8 @@
 use crate::core::matrices::Matrix4;
 use crate::core::tuples::{Point, Vector};
+use crate::geometry::cones::Cone;
 use crate::geometry::cubes::Cube;
+use crate::geometry::cylinders::Cylinder;
 use crate::geometry::planes::Plane;
 use crate::geometry::shapes::Shape;
 use crate::geometry::sphere::Sphere;
@@ -32,6 +34,8 @@ pub enum Object {
     Sphere(Sphere),
     Plane(Plane),
     Cube(Cube),
+    Cylinder(Cylinder),
+    Cone(Cone),
 }
 
 impl Object {
@@ -48,6 +52,16 @@ impl Object {
     /// Create a new default cube with identity transformation.
     pub fn cube() -> Self {
         Object::Cube(Cube::new())
+    }
+
+    /// Create a new default cylinder with identity transformation.
+    pub fn cylinder() -> Self {
+        Object::Cylinder(Cylinder::new())
+    }
+
+    /// Create a new default cone with identity transformation.
+    pub fn cone() -> Self {
+        Object::Cone(Cone::new())
     }
 }
 
@@ -67,6 +81,8 @@ impl Intersectable for Object {
             Object::Sphere(s) => s.local_intersect(local_ray),
             Object::Plane(p) => p.local_intersect(local_ray),
             Object::Cube(c) => c.local_intersect(local_ray),
+            Object::Cylinder(cy) => cy.local_intersect(local_ray),
+            Object::Cone(co) => co.local_intersect(local_ray),
         }
     }
 
@@ -93,6 +109,8 @@ impl Intersectable for Object {
             Object::Sphere(s) => s.local_normal_at(local_point),
             Object::Plane(p) => p.local_normal_at(local_point),
             Object::Cube(c) => c.local_normal_at(local_point),
+            Object::Cylinder(cy) => cy.local_normal_at(local_point),
+            Object::Cone(co) => co.local_normal_at(local_point),
         };
 
         // Transform normal to world space
@@ -109,6 +127,8 @@ impl HasMaterial for Object {
             Object::Sphere(s) => s.material,
             Object::Plane(p) => p.material,
             Object::Cube(c) => c.material,
+            Object::Cylinder(cy) => cy.material,
+            Object::Cone(co) => co.material,
         }
     }
 
@@ -117,6 +137,8 @@ impl HasMaterial for Object {
             Object::Sphere(s) => s.material = material,
             Object::Plane(p) => p.material = material,
             Object::Cube(c) => c.material = material,
+            Object::Cylinder(cy) => cy.material = material,
+            Object::Cone(co) => co.material = material,
         }
     }
 }
@@ -127,6 +149,8 @@ impl Transformable for Object {
             Object::Sphere(s) => s.transformation,
             Object::Plane(p) => p.transformation,
             Object::Cube(c) => c.transformation,
+            Object::Cylinder(cy) => cy.transformation,
+            Object::Cone(co) => co.transformation,
         }
     }
 
@@ -135,6 +159,8 @@ impl Transformable for Object {
             Object::Sphere(s) => s.transformation = transformation,
             Object::Plane(p) => p.transformation = transformation,
             Object::Cube(c) => c.transformation = transformation,
+            Object::Cylinder(cy) => cy.transformation = transformation,
+            Object::Cone(co) => co.transformation = transformation,
         }
     }
 }

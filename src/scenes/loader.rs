@@ -1,7 +1,9 @@
 use crate::core::color::Color;
 use crate::core::matrices::Matrix4;
 use crate::core::tuples::{Point, Tuple, Vector};
+use crate::geometry::cones::Cone;
 use crate::geometry::cubes::Cube;
+use crate::geometry::cylinders::Cylinder;
 use crate::geometry::planes::Plane;
 use crate::geometry::sphere::Sphere;
 use crate::rendering::camera::Camera;
@@ -55,6 +57,28 @@ pub enum ObjectConfig {
     Cube {
         transform: Option<TransformConfig>,
         material: Option<MaterialConfig>,
+    },
+    #[serde(rename = "cylinder")]
+    Cylinder {
+        transform: Option<TransformConfig>,
+        material: Option<MaterialConfig>,
+        #[serde(default)]
+        minimum: Option<f64>,
+        #[serde(default)]
+        maximum: Option<f64>,
+        #[serde(default)]
+        closed: Option<bool>,
+    },
+    #[serde(rename = "cone")]
+    Cone {
+        transform: Option<TransformConfig>,
+        material: Option<MaterialConfig>,
+        #[serde(default)]
+        minimum: Option<f64>,
+        #[serde(default)]
+        maximum: Option<f64>,
+        #[serde(default)]
+        closed: Option<bool>,
     },
 }
 
@@ -235,6 +259,40 @@ fn build_object(config: &ObjectConfig) -> Object {
             Object::Cube(Cube {
                 transformation,
                 material: mat,
+            })
+        }
+        ObjectConfig::Cylinder {
+            transform,
+            material,
+            minimum,
+            maximum,
+            closed,
+        } => {
+            let transformation = build_transform(transform);
+            let mat = build_material(material);
+            Object::Cylinder(Cylinder {
+                transformation,
+                material: mat,
+                minimum: minimum.unwrap_or(f64::NEG_INFINITY),
+                maximum: maximum.unwrap_or(f64::INFINITY),
+                closed: closed.unwrap_or(false),
+            })
+        }
+        ObjectConfig::Cone {
+            transform,
+            material,
+            minimum,
+            maximum,
+            closed,
+        } => {
+            let transformation = build_transform(transform);
+            let mat = build_material(material);
+            Object::Cone(Cone {
+                transformation,
+                material: mat,
+                minimum: minimum.unwrap_or(f64::NEG_INFINITY),
+                maximum: maximum.unwrap_or(f64::INFINITY),
+                closed: closed.unwrap_or(false),
             })
         }
     }
