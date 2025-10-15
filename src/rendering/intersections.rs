@@ -34,8 +34,8 @@ impl Intersection<'_> {
     }
 
     // Assumes intersections are sorted
-    pub fn hit(intersections: Vec<Intersection>) -> Option<Intersection> {
-        intersections.iter().find(|i| i.t >= 0.0).cloned()
+    pub fn hit<'a>(intersections: &'a [Intersection<'a>]) -> Option<&'a Intersection<'a>> {
+        intersections.iter().find(|i| i.t >= 0.0)
     }
 
     pub fn prepare_computations(&self, ray: Ray) -> Computations {
@@ -169,12 +169,11 @@ mod tests {
     fn hit_when_all_intersections_have_positive_time() {
         let sphere = Object::Sphere(Sphere::new());
         let intersections = Intersection::sort_intersections(vec![1.0, 2.0]);
-        let hit = Intersection::hit(
-            intersections
-                .iter()
-                .map(|i| Intersection::new(*i, &sphere))
-                .collect(),
-        );
+        let intersections: Vec<_> = intersections
+            .iter()
+            .map(|i| Intersection::new(*i, &sphere))
+            .collect();
+        let hit = Intersection::hit(&intersections);
         assert_eq!(hit.unwrap().t, 1.0);
     }
 
@@ -182,12 +181,11 @@ mod tests {
     fn hit_when_some_intersections_have_negative_time() {
         let sphere = Object::Sphere(Sphere::new());
         let intersections = Intersection::sort_intersections(vec![-1.0, 1.0]);
-        let hit = Intersection::hit(
-            intersections
-                .iter()
-                .map(|i| Intersection::new(*i, &sphere))
-                .collect(),
-        );
+        let intersections: Vec<_> = intersections
+            .iter()
+            .map(|i| Intersection::new(*i, &sphere))
+            .collect();
+        let hit = Intersection::hit(&intersections);
         assert_eq!(hit.unwrap().t, 1.0);
     }
 
@@ -195,12 +193,11 @@ mod tests {
     fn hit_when_all_intersections_have_negative_time() {
         let sphere = Object::Sphere(Sphere::new());
         let intersections = Intersection::sort_intersections(vec![-2.0, -1.0]);
-        let hit = Intersection::hit(
-            intersections
-                .iter()
-                .map(|i| Intersection::new(*i, &sphere))
-                .collect(),
-        );
+        let intersections: Vec<_> = intersections
+            .iter()
+            .map(|i| Intersection::new(*i, &sphere))
+            .collect();
+        let hit = Intersection::hit(&intersections);
         assert!(hit.is_none());
     }
 
@@ -217,12 +214,11 @@ mod tests {
             intersection3,
             intersection4,
         ]);
-        let hit = Intersection::hit(
-            intersections
-                .iter()
-                .map(|i| Intersection::new(*i, &sphere))
-                .collect(),
-        );
+        let intersections: Vec<_> = intersections
+            .iter()
+            .map(|i| Intersection::new(*i, &sphere))
+            .collect();
+        let hit = Intersection::hit(&intersections);
         assert_eq!(hit.unwrap().t, 2.0);
     }
 

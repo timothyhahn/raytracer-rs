@@ -7,7 +7,7 @@ use std::path::Path;
 pub struct Canvas {
     pub width: u32,
     pub height: u32,
-    pub pixels: Vec<Vec<Color>>,
+    pub pixels: Vec<Color>,
 }
 
 const MAX_COLOR_VALUE: u32 = 255;
@@ -15,7 +15,7 @@ const MAX_LINE_LENGTH: u32 = 70;
 
 impl Canvas {
     pub fn new(width: u32, height: u32) -> Canvas {
-        let pixels = vec![vec![Color::new(0.0, 0.0, 0.0); width as usize]; height as usize];
+        let pixels = vec![Color::new(0.0, 0.0, 0.0); (width * height) as usize];
         Canvas {
             width,
             height,
@@ -25,17 +25,20 @@ impl Canvas {
 
     pub fn write_pixel(&mut self, x: u32, y: u32, color: &Color) {
         if x >= self.width || y >= self.height {
-            println!(
-                "Ignoring pixel at ({}, {}), as canvas size is ({},{})",
-                x, y, self.width, self.height
-            );
             return;
         }
-        self.pixels[y as usize][x as usize] = *color;
+        let idx = self.index(x, y);
+        self.pixels[idx] = *color;
     }
 
     pub fn pixel_at(&self, x: u32, y: u32) -> Color {
-        self.pixels[y as usize][x as usize]
+        let idx = self.index(x, y);
+        self.pixels[idx]
+    }
+
+    #[inline]
+    fn index(&self, x: u32, y: u32) -> usize {
+        (y * self.width + x) as usize
     }
 
     pub fn to_ppm_string(&self) -> String {
@@ -49,7 +52,7 @@ impl Canvas {
         ppm.push_str(&format!("{} {}\n", self.width, self.height));
         ppm.push_str(&format!("{}\n", MAX_COLOR_VALUE));
 
-        for row in self.pixels.iter() {
+        for row in self.pixels.chunks(self.width as usize) {
             let mut line = String::new();
             for pixel in row.iter() {
                 let r = convert_canvas_color_value_to_decimal_rgb_value(pixel.red);
@@ -91,14 +94,13 @@ impl Canvas {
         let height = self.height;
         let mut img = RgbImage::new(width, height);
 
-        for x in 0..width {
-            for y in 0..height {
-                let pixel = self.pixel_at(x, y);
-                let r = convert_canvas_color_value_to_decimal_rgb_value(pixel.red) as u8;
-                let g = convert_canvas_color_value_to_decimal_rgb_value(pixel.green) as u8;
-                let b = convert_canvas_color_value_to_decimal_rgb_value(pixel.blue) as u8;
-                img.put_pixel(x, y, Rgb([r, g, b]));
-            }
+        for (idx, pixel) in self.pixels.iter().enumerate() {
+            let x = (idx as u32) % width;
+            let y = (idx as u32) / width;
+            let r = convert_canvas_color_value_to_decimal_rgb_value(pixel.red) as u8;
+            let g = convert_canvas_color_value_to_decimal_rgb_value(pixel.green) as u8;
+            let b = convert_canvas_color_value_to_decimal_rgb_value(pixel.blue) as u8;
+            img.put_pixel(x, y, Rgb([r, g, b]));
         }
 
         img
@@ -137,11 +139,7 @@ mod tests {
         let c = Canvas::new(10, 20);
         assert_eq!(c.width, 10);
         assert_eq!(c.height, 20);
-        for row in c.pixels.iter() {
-            for pixel in row.iter() {
-                assert_eq!(*pixel, Color::new(0.0, 0.0, 0.0));
-            }
-        }
+        assert!(c.pixels.iter().all(|pixel| *pixel == Color::new(0.0, 0.0, 0.0)));
     }
 
     #[test]
@@ -149,7 +147,7 @@ mod tests {
         let mut c = Canvas::new(10, 20);
         let red = Color::new(1.0, 0.0, 0.0);
         c.write_pixel(2, 3, &red);
-        assert_eq!(c.pixels[3][2], red);
+        assert_eq!(c.pixel_at(2, 3), red);
     }
 
     #[test]
@@ -157,7 +155,7 @@ mod tests {
         let mut c = Canvas::new(10, 20);
         let red = Color::new(1.0, 0.0, 0.0);
         c.write_pixel(10, 20, &red);
-        assert_eq!(c.pixels[19][9], Color::new(0.0, 0.0, 0.0));
+        assert_eq!(c.pixel_at(9, 19), Color::new(0.0, 0.0, 0.0));
     }
 
     #[test]
@@ -190,11 +188,7 @@ mod tests {
     fn split_long_lines_in_ppm() {
         let mut c = Canvas::new(10, 2);
         let color = Color::new(1.0, 0.8, 0.6);
-        for row in c.pixels.iter_mut() {
-            for pixel in row.iter_mut() {
-                *pixel = color;
-            }
-        }
+        c.pixels.fill(color);
         let ppm = c.to_ppm_string();
         let lines: Vec<&str> = ppm.lines().collect();
         assert_eq!(

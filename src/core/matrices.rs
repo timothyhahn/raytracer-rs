@@ -114,18 +114,20 @@ impl Matrix4 {
 
     #[allow(clippy::needless_range_loop)]
     pub fn inverse(&self) -> Option<Matrix4> {
-        if !self.is_invertible() {
+        let determinant = self.determinant();
+        if float_equal(determinant, 0.0) {
             return None;
         }
 
         let mut data = [[0.0; 4]; 4];
+        let inv_det = 1.0 / determinant;
 
         for row in 0..4 {
             for col in 0..4 {
                 let c = self.cofactor(row, col);
 
                 // Transpose here by swapping row/col
-                data[col][row] = c / self.determinant();
+                data[col][row] = c * inv_det;
             }
         }
         Some(Matrix4::new(data))

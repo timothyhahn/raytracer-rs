@@ -78,8 +78,7 @@ impl World {
 
     fn color_at_internal(&self, ray: Ray, remaining: u32) -> Color {
         let intersections = self.intersect(ray);
-        let hit = Intersection::hit(intersections);
-        match hit {
+        match Intersection::hit(&intersections) {
             Some(hit) => {
                 let comps = hit.prepare_computations(ray);
                 self.shade_hit_internal(&comps, remaining)
@@ -105,8 +104,7 @@ impl World {
         let intersections = self.intersect(ray);
 
         // See if there was a hit and if so, whether t is less than distance.
-        let hit = Intersection::hit(intersections);
-        match hit {
+        match Intersection::hit(&intersections) {
             Some(hit) => hit.t < distance,
             None => false,
         }

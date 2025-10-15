@@ -73,7 +73,7 @@ fn draw_chapter_5_circle_from_scene() {
         SceneFile::from_file("scenes/chapter_5.toml").expect("Failed to load chapter 5 scene");
     let camera = scene.build_camera();
     let world = scene.build_world();
-    let canvas = camera.render(world);
+    let canvas = camera.render(&world);
     let _ = canvas.to_ppm("outputs/chapter_5_circle.ppm");
     let _ = canvas.to_jpeg("outputs/chapter_5_circle.jpg");
 }
@@ -85,7 +85,7 @@ fn draw_chapter_6_sphere_from_scene() {
         SceneFile::from_file("scenes/chapter_6.toml").expect("Failed to load chapter 6 scene");
     let camera = scene.build_camera();
     let world = scene.build_world();
-    let canvas = camera.render(world);
+    let canvas = camera.render(&world);
     let _ = canvas.to_ppm("outputs/chapter_6_sphere.ppm");
     let _ = canvas.to_jpeg("outputs/chapter_6_sphere.jpg");
 }
@@ -97,7 +97,7 @@ fn draw_chapter_7_and_8_world_from_scene() {
         .expect("Failed to load chapter 7 and 8 scene");
     let camera = scene.build_camera();
     let world = scene.build_world();
-    let canvas = camera.render(world);
+    let canvas = camera.render(&world);
     let _ = canvas.to_ppm("outputs/chapter_7_and_8_world.ppm");
     let _ = canvas.to_jpeg("outputs/chapter_7_and_8_world.jpg");
 }
@@ -109,7 +109,7 @@ fn draw_chapter_9_plane_scene_from_scene() {
         SceneFile::from_file("scenes/chapter_9.toml").expect("Failed to load chapter 9 scene");
     let camera = scene.build_camera();
     let world = scene.build_world();
-    let canvas = camera.render(world);
+    let canvas = camera.render(&world);
     let _ = canvas.to_ppm("outputs/chapter_9_plane_scene.ppm");
     let _ = canvas.to_jpeg("outputs/chapter_9_plane_scene.jpg");
 }
@@ -120,7 +120,7 @@ fn draw_chapter_10_patterns_from_scene() {
         SceneFile::from_file("scenes/chapter_10.toml").expect("Failed to load chapter 10 scene");
     let camera = scene.build_camera();
     let world = scene.build_world();
-    let canvas = camera.render(world);
+    let canvas = camera.render(&world);
     let _ = canvas.to_ppm("outputs/chapter_10_patterns.ppm");
     let _ = canvas.to_jpeg("outputs/chapter_10_patterns.jpg");
 }
@@ -131,7 +131,7 @@ fn draw_chapter_11_reflections_from_scene() {
         SceneFile::from_file("scenes/chapter_11.toml").expect("Failed to load chapter 11 scene");
     let camera = scene.build_camera();
     let world = scene.build_world();
-    let canvas = camera.render(world);
+    let canvas = camera.render(&world);
     let _ = canvas.to_ppm("outputs/chapter_11_reflections.ppm");
     let _ = canvas.to_jpeg("outputs/chapter_11_reflections.jpg");
 }
@@ -142,7 +142,7 @@ fn draw_chapter_12_cubes_from_scene() {
         SceneFile::from_file("scenes/chapter_12.toml").expect("Failed to load chapter 12 scene");
     let camera = scene.build_camera();
     let world = scene.build_world();
-    let canvas = camera.render(world);
+    let canvas = camera.render(&world);
     let _ = canvas.to_ppm("outputs/chapter_12_cubes.ppm");
     let _ = canvas.to_jpeg("outputs/chapter_12_cubes.jpg");
 }
