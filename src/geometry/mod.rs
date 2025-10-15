@@ -5,6 +5,6 @@
 //! - `sphere`: Sphere implementation with ray intersection and normal calculation
 //! - `planes`: Infinite plane implementation for floors, walls, and other flat surfaces
 
+pub mod planes;
 pub mod shapes;
 pub mod sphere;
-pub mod planes;

@@ -1,5 +1,5 @@
-use crate::rendering::rays::Ray;
 use crate::core::tuples::{Point, Vector};
+use crate::rendering::rays::Ray;
 
 /// The Shape trait defines the pure geometry interface that all shapes must implement.
 /// Shapes work in object space - transformation and materials are handled by the Object enum.
@@ -16,9 +16,9 @@ pub trait Shape {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::scene::materials::Material;
     use crate::core::matrices::Matrix4;
     use crate::core::tuples::Tuple;
+    use crate::scene::materials::Material;
     use std::cell::RefCell;
 
     /// TestShape is used for testing the abstract Shape behavior.

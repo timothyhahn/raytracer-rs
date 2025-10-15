@@ -27,8 +27,8 @@ impl Ray {
 #[cfg(test)]
 mod tests {
     use crate::core::matrices::Matrix4;
-    use crate::rendering::rays::Ray;
     use crate::core::tuples::{Point, Tuple, Vector};
+    use crate::rendering::rays::Ray;
 
     #[test]
     fn querying_a_ray() {

@@ -1,0 +1,60 @@
+# Chapter 11: Reflection Showcase
+# Demonstrates reflective materials with a mirror-like sphere and reflective floor
+
+[camera]
+width = 800
+height = 600
+fov = 60
+from = [0.0, 1.5, -5.0]
+to = [0.0, 1.0, 0.0]
+up = [0.0, 1.0, 0.0]
+
+[light]
+position = [-10.0, 10.0, -10.0]
+intensity = [1.0, 1.0, 1.0]
+
+# Reflective floor - checkerboard pattern with high reflectivity
+[[objects]]
+type = "plane"
+
+[objects.material]
+ambient = 0.1
+diffuse = 0.4
+specular = 0.0
+reflectivity = 0.5
+
+[objects.material.pattern]
+type = "checkers"
+color_a = [0.15, 0.15, 0.15]
+color_b = [0.85, 0.85, 0.85]
+
+# Large mirror-like sphere - very reflective
+[[objects]]
+type = "sphere"
+
+[objects.transform]
+translate = [-0.5, 1.0, 0.5]
+
+[objects.material]
+color = [0.1, 0.1, 0.1]
+ambient = 0.0
+diffuse = 0.1
+specular = 0.9
+shininess = 300.0
+reflectivity = 0.9
+
+# Small red sphere - to be reflected in the mirror sphere
+[[objects]]
+type = "sphere"
+
+[objects.transform]
+scale = [0.5, 0.5, 0.5]
+translate = [1.5, 0.5, -0.5]
+
+[objects.material]
+color = [1.0, 0.2, 0.2]
+ambient = 0.1
+diffuse = 0.7
+specular = 0.3
+shininess = 200.0
+reflectivity = 0.0

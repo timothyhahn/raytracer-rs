@@ -1,7 +1,7 @@
 use crate::core::floats::EPSILON;
+use crate::core::tuples::{Point, Vector};
 use crate::rendering::objects::{Intersectable, Object};
 use crate::rendering::rays::Ray;
-use crate::core::tuples::{Point, Vector};
 
 #[derive(Debug, Copy, Clone)]
 pub struct Intersection<'a> {
@@ -15,6 +15,7 @@ pub struct Computations {
     pub point: Point,
     pub eye_vector: Vector,
     pub normal_vector: Vector,
+    pub reflect_vector: Vector,
     pub inside: bool,
     pub over_point: Point,
 }
@@ -43,6 +44,9 @@ impl Intersection<'_> {
         } else {
             (false, normal_vector)
         };
+
+        let reflect_vector = ray.direction.reflect(&normal_vector);
+
         let point = ray.position(self.t);
 
         let over_point = point + normal_vector * EPSILON;
@@ -52,6 +56,7 @@ impl Intersection<'_> {
             point,
             eye_vector,
             normal_vector,
+            reflect_vector,
             inside,
             over_point,
         }
@@ -61,12 +66,12 @@ impl Intersection<'_> {
 #[cfg(test)]
 mod tests {
     use crate::core::floats::EPSILON;
-    use crate::rendering::intersections::Intersection;
     use crate::core::matrices::Matrix4;
+    use crate::core::tuples::{Point, Tuple, Vector};
+    use crate::geometry::sphere::Sphere;
+    use crate::rendering::intersections::Intersection;
     use crate::rendering::objects::{Object, Transformable};
     use crate::rendering::rays::Ray;
-    use crate::geometry::sphere::Sphere;
-    use crate::core::tuples::{Point, Tuple, Vector};
 
     #[test]
     fn an_intersection_encapsulates_time_and_object() {
@@ -190,5 +195,20 @@ mod tests {
         let intersection = Intersection::new(5.0, &shape);
         let computations = intersection.prepare_computations(ray);
         assert!(computations.over_point.z < -EPSILON / 2.0);
+    }
+
+    #[test]
+    fn precomputing_the_reflection_vector() {
+        let shape = Object::plane();
+        let ray = Ray::new(
+            Point::new(0.0, 1.0, -1.0),
+            Vector::new(0.0, -2_f64.sqrt() / 2.0, 2_f64.sqrt() / 2.0),
+        );
+        let intersection = Intersection::new(2_f64.sqrt(), &shape);
+        let computations = intersection.prepare_computations(ray);
+        assert_eq!(
+            computations.reflect_vector,
+            Vector::new(0.0, 2_f64.sqrt() / 2.0, 2_f64.sqrt() / 2.0)
+        );
     }
 }

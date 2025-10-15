@@ -1,12 +1,14 @@
 use crate::core::color::Color;
-use crate::rendering::intersections::{Computations, Intersection};
-use crate::scene::lights::PointLight;
-use crate::scene::materials::Material;
 use crate::core::matrices::Matrix4;
+use crate::core::tuples::{Point, Tuple};
+use crate::geometry::sphere::Sphere;
+use crate::rendering::intersections::{Computations, Intersection};
 use crate::rendering::objects::{HasMaterial, Intersectable, Object};
 use crate::rendering::rays::Ray;
-use crate::geometry::sphere::Sphere;
-use crate::core::tuples::{Point, Tuple};
+use crate::scene::lights::PointLight;
+use crate::scene::materials::Material;
+
+const DEFAULT_MAX_REFLECTION_DEPTH: u32 = 5;
 
 pub struct World {
     pub objects: Vec<Object>,
@@ -37,6 +39,10 @@ impl World {
     }
 
     pub fn shade_hit(&self, comps: Computations) -> Color {
+        self.shade_hit_internal(comps, DEFAULT_MAX_REFLECTION_DEPTH)
+    }
+
+    fn shade_hit_internal(&self, comps: Computations, remaining: u32) -> Color {
         // If there's no light source, return black (no illumination)
         let light = match self.light_source {
             Some(light) => light,
@@ -44,23 +50,30 @@ impl World {
         };
 
         let in_shadow = self.is_shadowed(comps.over_point);
-        comps.object.material().lighting(
+        let surface = comps.object.material().lighting(
             &comps.object,
             light,
             comps.point,
             comps.eye_vector,
             comps.normal_vector,
             in_shadow,
-        )
+        );
+
+        let reflected_color = self.reflected_color_internal(comps, remaining);
+        surface + reflected_color
     }
 
     pub fn color_at(&self, ray: Ray) -> Color {
+        self.color_at_internal(ray, DEFAULT_MAX_REFLECTION_DEPTH)
+    }
+
+    fn color_at_internal(&self, ray: Ray, remaining: u32) -> Color {
         let intersections = self.intersect(ray);
         let hit = Intersection::hit(intersections);
         match hit {
             Some(hit) => {
                 let comps = hit.prepare_computations(ray);
-                self.shade_hit(comps)
+                self.shade_hit_internal(comps, remaining)
             }
             None => Color::black(),
         }
@@ -88,6 +101,25 @@ impl World {
             Some(hit) => hit.t < distance,
             None => false,
         }
+    }
+
+    pub fn reflected_color(&self, comps: Computations) -> Color {
+        self.reflected_color_internal(comps, DEFAULT_MAX_REFLECTION_DEPTH)
+    }
+
+    fn reflected_color_internal(&self, comps: Computations, remaining: u32) -> Color {
+        if remaining == 0 {
+            return Color::BLACK;
+        }
+
+        if comps.object.material().reflectivity == 0.0 {
+            return Color::BLACK;
+        }
+
+        let reflect_ray = Ray::new(comps.over_point, comps.reflect_vector);
+        let color = self.color_at_internal(reflect_ray, remaining - 1);
+
+        color * comps.object.material().reflectivity
     }
 }
 
@@ -123,15 +155,16 @@ impl Default for World {
 #[cfg(test)]
 mod tests {
     use crate::core::color::Color;
-    use crate::rendering::intersections::Intersection;
-    use crate::scene::lights::PointLight;
-    use crate::scene::materials::Material;
+    use crate::core::floats::float_equal;
     use crate::core::matrices::Matrix4;
+    use crate::core::tuples::{Point, Tuple, Vector};
+    use crate::geometry::sphere::Sphere;
+    use crate::rendering::intersections::Intersection;
     use crate::rendering::objects::{HasMaterial, Intersectable, Object, Transformable};
     use crate::rendering::rays::Ray;
-    use crate::geometry::sphere::Sphere;
-    use crate::core::tuples::{Point, Tuple, Vector};
     use crate::rendering::world::World;
+    use crate::scene::lights::PointLight;
+    use crate::scene::materials::Material;
 
     #[test]
     fn empty_world() {
@@ -276,5 +309,136 @@ mod tests {
         let computations = intersection.prepare_computations(ray);
         let color = world.shade_hit(computations);
         assert_eq!(color, Color::new(0.1, 0.1, 0.1));
+    }
+
+    #[test]
+    fn reflected_color_for_nonreflective_material() {
+        let world = World::default();
+        let ray = Ray::new(Point::new(0.0, 0.0, 0.0), Vector::new(0.0, 0.0, 1.0));
+        let shape = Object::plane();
+        let intersection = Intersection::new(1.0, &shape);
+        let computations = intersection.prepare_computations(ray);
+        let color = world.reflected_color(computations);
+        assert_eq!(color, Color::BLACK);
+    }
+
+    #[test]
+    fn reflected_color_for_reflective_material() {
+        let mut world = World::default();
+
+        let mut shape = Object::plane();
+        shape.set_material(Material {
+            reflectivity: 0.5,
+            ..Default::default()
+        });
+        shape.set_transform(Matrix4::translate(0.0, -1.0, 0.0));
+
+        world.objects.push(shape);
+
+        let ray = Ray::new(
+            Point::new(0.0, 0.0, -3.0),
+            Vector::new(0.0, -2_f64.sqrt() / 2.0, 2_f64.sqrt() / 2.0),
+        );
+
+        let intersection = Intersection::new(2_f64.sqrt(), &world.objects[2]);
+        let computations = intersection.prepare_computations(ray);
+        let color = world.reflected_color(computations);
+
+        let expected = Color::new(0.19033, 0.23792, 0.14275);
+        assert!(
+            float_equal(color.red, expected.red)
+                && float_equal(color.green, expected.green)
+                && float_equal(color.blue, expected.blue),
+            "Expected color {:?}, got {:?}",
+            expected,
+            color
+        );
+    }
+
+    #[test]
+    fn shade_hit_with_reflective_material() {
+        let mut world = World::default();
+
+        let mut shape = Object::plane();
+        shape.set_material(Material {
+            reflectivity: 0.5,
+            ..Default::default()
+        });
+        shape.set_transform(Matrix4::translate(0.0, -1.0, 0.0));
+
+        world.objects.push(shape);
+
+        let ray = Ray::new(
+            Point::new(0.0, 0.0, -3.0),
+            Vector::new(0.0, -2_f64.sqrt() / 2.0, 2_f64.sqrt() / 2.0),
+        );
+
+        let intersection = Intersection::new(2_f64.sqrt(), &world.objects[2]);
+        let computations = intersection.prepare_computations(ray);
+        let color = world.shade_hit(computations);
+
+        let expected = Color::new(0.87676, 0.92434, 0.82917);
+        assert!(
+            float_equal(color.red, expected.red)
+                && float_equal(color.green, expected.green)
+                && float_equal(color.blue, expected.blue),
+            "Expected color {:?}, got {:?}",
+            expected,
+            color
+        );
+    }
+
+    // AKA the infinite recursion test
+    #[test]
+    fn color_at_with_mutually_reflective_material() {
+        let mut world = World::new();
+        world.light_source = Some(PointLight::new(Point::new(0.0, 0.0, 0.0), Color::white()));
+
+        let mut lower = Object::plane();
+        lower.set_material(Material {
+            reflectivity: 1.0,
+            ..Default::default()
+        });
+        lower.set_transform(Matrix4::translate(0.0, -1.0, 0.0));
+        world.objects.push(lower);
+
+        let mut upper = Object::plane();
+        upper.set_material(Material {
+            reflectivity: 1.0,
+            ..Default::default()
+        });
+        upper.set_transform(Matrix4::translate(0.0, 1.0, 0.0));
+        world.objects.push(upper);
+
+        let ray = Ray::new(Point::new(0.0, 0.0, 0.0), Vector::new(0.0, 1.0, 0.0));
+
+        // Should terminate successfully without stack overflow
+        let _color = world.color_at(ray);
+        // If we get here, the test passed (no stack overflow)
+    }
+
+    #[test]
+    fn reflected_color_at_maximum_recursion_depth() {
+        let mut world = World::default();
+
+        let mut shape = Object::plane();
+        shape.set_material(Material {
+            reflectivity: 0.5,
+            ..Default::default()
+        });
+        shape.set_transform(Matrix4::translate(0.0, -1.0, 0.0));
+        world.objects.push(shape);
+
+        let ray = Ray::new(
+            Point::new(0.0, 0.0, -3.0),
+            Vector::new(0.0, -2_f64.sqrt() / 2.0, 2_f64.sqrt() / 2.0),
+        );
+
+        let intersection = Intersection::new(2_f64.sqrt(), &world.objects[2]);
+        let comps = intersection.prepare_computations(ray);
+
+        // At recursion depth 0, should return black
+        let color = world.reflected_color_internal(comps, 0);
+        assert_eq!(color, Color::BLACK)
     }
 }

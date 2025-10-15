@@ -69,8 +69,8 @@ fn draw_chapter_4_clock() {
 #[allow(dead_code)]
 fn draw_chapter_5_circle_from_scene() {
     println!("Drawing chapter 5 circle from scene...");
-    let scene = SceneFile::from_file("scenes/chapter_5.toml")
-        .expect("Failed to load chapter 5 scene");
+    let scene =
+        SceneFile::from_file("scenes/chapter_5.toml").expect("Failed to load chapter 5 scene");
     let camera = scene.build_camera();
     let world = scene.build_world();
     let canvas = camera.render(world);
@@ -81,8 +81,8 @@ fn draw_chapter_5_circle_from_scene() {
 #[allow(dead_code)]
 fn draw_chapter_6_sphere_from_scene() {
     println!("Drawing chapter 6 sphere from scene...");
-    let scene = SceneFile::from_file("scenes/chapter_6.toml")
-        .expect("Failed to load chapter 6 scene");
+    let scene =
+        SceneFile::from_file("scenes/chapter_6.toml").expect("Failed to load chapter 6 scene");
     let camera = scene.build_camera();
     let world = scene.build_world();
     let canvas = camera.render(world);
@@ -105,8 +105,8 @@ fn draw_chapter_7_and_8_world_from_scene() {
 #[allow(dead_code)]
 fn draw_chapter_9_plane_scene_from_scene() {
     println!("Drawing chapter 9 plane scene from scene...");
-    let scene = SceneFile::from_file("scenes/chapter_9.toml")
-        .expect("Failed to load chapter 9 scene");
+    let scene =
+        SceneFile::from_file("scenes/chapter_9.toml").expect("Failed to load chapter 9 scene");
     let camera = scene.build_camera();
     let world = scene.build_world();
     let canvas = camera.render(world);
@@ -116,13 +116,24 @@ fn draw_chapter_9_plane_scene_from_scene() {
 
 fn draw_chapter_10_patterns_from_scene() {
     println!("Drawing chapter 10 pattern showcase from scene...");
-    let scene = SceneFile::from_file("scenes/chapter_10.toml")
-        .expect("Failed to load chapter 10 scene");
+    let scene =
+        SceneFile::from_file("scenes/chapter_10.toml").expect("Failed to load chapter 10 scene");
     let camera = scene.build_camera();
     let world = scene.build_world();
     let canvas = camera.render(world);
     let _ = canvas.to_ppm("outputs/chapter_10_patterns.ppm");
     let _ = canvas.to_jpeg("outputs/chapter_10_patterns.jpg");
+}
+
+fn draw_chapter_11_reflections_from_scene() {
+    println!("Drawing chapter 11 reflection showcase from scene...");
+    let scene =
+        SceneFile::from_file("scenes/chapter_11.toml").expect("Failed to load chapter 11 scene");
+    let camera = scene.build_camera();
+    let world = scene.build_world();
+    let canvas = camera.render(world);
+    let _ = canvas.to_ppm("outputs/chapter_11_reflections.ppm");
+    let _ = canvas.to_jpeg("outputs/chapter_11_reflections.jpg");
 }
 
 fn main() {
@@ -133,4 +144,5 @@ fn main() {
     draw_chapter_7_and_8_world_from_scene();
     draw_chapter_9_plane_scene_from_scene();
     draw_chapter_10_patterns_from_scene();
+    draw_chapter_11_reflections_from_scene();
 }

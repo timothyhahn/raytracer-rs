@@ -8,9 +8,9 @@
 //! - `camera`: Camera configuration and ray generation for each pixel
 //! - `world`: Scene container with objects and lighting for rendering
 
-pub mod rays;
+pub mod camera;
+pub mod canvas;
 pub mod intersections;
 pub mod objects;
-pub mod canvas;
-pub mod camera;
+pub mod rays;
 pub mod world;

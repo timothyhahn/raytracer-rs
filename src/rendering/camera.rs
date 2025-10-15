@@ -1,7 +1,7 @@
-use crate::rendering::canvas::Canvas;
 use crate::core::matrices::Matrix4;
-use crate::rendering::rays::Ray;
 use crate::core::tuples::{Point, Tuple};
+use crate::rendering::canvas::Canvas;
+use crate::rendering::rays::Ray;
 use crate::rendering::world::World;
 
 #[derive(Debug, Copy, Clone)]
@@ -69,13 +69,13 @@ impl Camera {
 
 #[cfg(test)]
 mod tests {
-    use crate::rendering::camera::Camera;
     use crate::core::color::Color;
     use crate::core::floats::float_equal;
     use crate::core::matrices::Matrix4;
-    use crate::scene::transformations::view_transform;
     use crate::core::tuples::{Point, Tuple, Vector};
+    use crate::rendering::camera::Camera;
     use crate::rendering::world::World;
+    use crate::scene::transformations::view_transform;
     use std::f64::consts::PI;
 
     #[test]

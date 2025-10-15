@@ -18,8 +18,8 @@ pub fn view_transform(from: Point, to: Point, up: Vector) -> Matrix4 {
 
 #[cfg(test)]
 mod tests {
-    use crate::core::matrices::Matrix4;
     use super::view_transform;
+    use crate::core::matrices::Matrix4;
     use crate::core::tuples::{Point, Tuple, Vector};
 
     #[test]

@@ -6,7 +6,7 @@
 //! - `tuples`: Points and vectors in 3D space with associated operations
 //! - `matrices`: Matrix types (2x2, 3x3, 4x4) and transformation operations
 
-pub mod floats;
 pub mod color;
-pub mod tuples;
+pub mod floats;
 pub mod matrices;
+pub mod tuples;

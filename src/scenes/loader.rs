@@ -64,6 +64,8 @@ pub struct MaterialConfig {
     pub specular: f64,
     #[serde(default = "default_shininess")]
     pub shininess: f64,
+    #[serde(default = "default_reflectivity")]
+    pub reflectivity: f64,
     pub pattern: Option<PatternConfig>,
 }
 
@@ -114,6 +116,10 @@ fn default_specular() -> f64 {
 }
 fn default_shininess() -> f64 {
     200.0
+}
+
+fn default_reflectivity() -> f64 {
+    0.0
 }
 
 #[derive(Deserialize, Clone)]
@@ -169,11 +175,7 @@ impl SceneFile {
             ),
         );
 
-        let objects: Vec<Object> = self
-            .objects
-            .iter()
-            .map(build_object)
-            .collect();
+        let objects: Vec<Object> = self.objects.iter().map(build_object).collect();
 
         World {
             objects,
@@ -237,20 +239,21 @@ fn build_transform(config: &Option<TransformConfig>) -> Matrix4 {
 
 fn build_material(config: &Option<MaterialConfig>) -> Material {
     if let Some(mat_config) = config {
-        let mut material = Material::new(
-            Color::new(mat_config.color[0], mat_config.color[1], mat_config.color[2]),
+        let pattern = mat_config.pattern.as_ref().map(build_pattern);
+
+        Material::new(
+            Color::new(
+                mat_config.color[0],
+                mat_config.color[1],
+                mat_config.color[2],
+            ),
             mat_config.ambient,
             mat_config.diffuse,
             mat_config.specular,
             mat_config.shininess,
-        );
-
-        // Apply pattern if specified
-        if let Some(pattern_config) = &mat_config.pattern {
-            material.pattern = Some(build_pattern(pattern_config));
-        }
-
-        material
+            mat_config.reflectivity,
+            pattern,
+        )
     } else {
         Material::default()
     }
@@ -258,30 +261,30 @@ fn build_material(config: &Option<MaterialConfig>) -> Material {
 
 fn build_pattern(config: &PatternConfig) -> Pattern {
     let mut pattern = match config {
-        PatternConfig::Stripe { color_a, color_b, .. } => {
-            Pattern::stripe(
-                Color::new(color_a[0], color_a[1], color_a[2]),
-                Color::new(color_b[0], color_b[1], color_b[2]),
-            )
-        }
-        PatternConfig::Gradient { color_a, color_b, .. } => {
-            Pattern::gradient(
-                Color::new(color_a[0], color_a[1], color_a[2]),
-                Color::new(color_b[0], color_b[1], color_b[2]),
-            )
-        }
-        PatternConfig::Ring { color_a, color_b, .. } => {
-            Pattern::ring(
-                Color::new(color_a[0], color_a[1], color_a[2]),
-                Color::new(color_b[0], color_b[1], color_b[2]),
-            )
-        }
-        PatternConfig::Checkers { color_a, color_b, .. } => {
-            Pattern::checkers(
-                Color::new(color_a[0], color_a[1], color_a[2]),
-                Color::new(color_b[0], color_b[1], color_b[2]),
-            )
-        }
+        PatternConfig::Stripe {
+            color_a, color_b, ..
+        } => Pattern::stripe(
+            Color::new(color_a[0], color_a[1], color_a[2]),
+            Color::new(color_b[0], color_b[1], color_b[2]),
+        ),
+        PatternConfig::Gradient {
+            color_a, color_b, ..
+        } => Pattern::gradient(
+            Color::new(color_a[0], color_a[1], color_a[2]),
+            Color::new(color_b[0], color_b[1], color_b[2]),
+        ),
+        PatternConfig::Ring {
+            color_a, color_b, ..
+        } => Pattern::ring(
+            Color::new(color_a[0], color_a[1], color_a[2]),
+            Color::new(color_b[0], color_b[1], color_b[2]),
+        ),
+        PatternConfig::Checkers {
+            color_a, color_b, ..
+        } => Pattern::checkers(
+            Color::new(color_a[0], color_a[1], color_a[2]),
+            Color::new(color_b[0], color_b[1], color_b[2]),
+        ),
     };
 
     // Apply pattern transformation

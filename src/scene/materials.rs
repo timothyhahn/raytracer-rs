@@ -12,6 +12,7 @@ pub struct Material {
     pub diffuse: f64,
     pub specular: f64,
     pub shininess: f64,
+    pub reflectivity: f64,
     pub pattern: Option<Pattern>,
 }
 
@@ -22,6 +23,8 @@ impl Material {
         diffuse: f64,
         specular: f64,
         shininess: f64,
+        reflectivity: f64,
+        pattern: Option<Pattern>,
     ) -> Material {
         if ambient < 0.0 || diffuse < 0.0 || specular < 0.0 || shininess < 0.0 {
             panic!("Material values must be positive");
@@ -32,7 +35,8 @@ impl Material {
             diffuse,
             specular,
             shininess,
-            pattern: None,
+            reflectivity,
+            pattern,
         }
     }
 
@@ -91,7 +95,7 @@ impl Material {
 
 impl Default for Material {
     fn default() -> Material {
-        Material::new(Color::white(), 0.1, 0.9, 0.9, 200.0)
+        Material::new(Color::white(), 0.1, 0.9, 0.9, 200.0, 0.0, None)
     }
 }
 
@@ -117,7 +121,7 @@ mod tests {
 
     #[test]
     fn default_material() {
-        let material = Material::new(Color::white(), 0.1, 0.9, 0.9, 200.0);
+        let material = Material::default();
         assert_eq!(material.color, Color::white());
         assert_eq!(material.ambient, 0.1);
         assert_eq!(material.diffuse, 0.9);
@@ -261,5 +265,17 @@ mod tests {
         );
         assert_eq!(c1, Color::white());
         assert_eq!(c2, Color::black());
+    }
+
+    #[test]
+    fn default_material_has_no_pattern() {
+        let material = Material::default();
+        assert!(material.pattern.is_none());
+    }
+
+    #[test]
+    fn default_material_has_no_reflectivity() {
+        let material = Material::default();
+        assert_eq!(material.reflectivity, 0.0);
     }
 }

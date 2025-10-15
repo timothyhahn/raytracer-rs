@@ -18,8 +18,8 @@ impl PointLight {
 
 #[cfg(test)]
 mod tests {
-    use crate::core::color::Color;
     use super::PointLight;
+    use crate::core::color::Color;
     use crate::core::tuples::{Point, Tuple};
 
     #[test]
