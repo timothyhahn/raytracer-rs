@@ -4,28 +4,45 @@ use crate::{
         matrices::Matrix4,
         tuples::{Point, Tuple, Vector},
     },
-    geometry::shapes::Shape,
-    rendering::rays::Ray,
+    geometry::{bounds::Bounds, shapes::Shape},
+    rendering::{objects::Object, rays::Ray},
     scene::materials::Material,
 };
+use std::cell::RefCell;
+use std::rc::Weak;
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Clone)]
 pub struct Cone {
     pub transformation: Matrix4,
+    pub world_transformation: Matrix4,
     pub material: Material,
     pub minimum: f64,
     pub maximum: f64,
     pub closed: bool,
+    pub parent: Option<Weak<RefCell<Object>>>,
+}
+
+impl PartialEq for Cone {
+    fn eq(&self, other: &Self) -> bool {
+        self.transformation == other.transformation
+            && self.material == other.material
+            && self.minimum == other.minimum
+            && self.maximum == other.maximum
+            && self.closed == other.closed
+        // Ignore parent for equality comparison
+    }
 }
 
 impl Cone {
     pub fn new() -> Self {
         Self {
             transformation: Matrix4::identity(),
+            world_transformation: Matrix4::identity(),
             material: Material::default(),
             minimum: f64::NEG_INFINITY,
             maximum: f64::INFINITY,
             closed: false,
+            parent: None,
         }
     }
 }
@@ -106,6 +123,16 @@ impl Shape for Cone {
         }
 
         Vector::new(point.x, y, point.z)
+    }
+
+    /// Get the bounding box for this cone.
+    /// The radius at any height y is |y|, so we need to find the max radius.
+    fn bounds(&self) -> Bounds {
+        let limit = self.minimum.abs().max(self.maximum.abs());
+        Bounds::new(
+            Point::new(-limit, self.minimum, -limit),
+            Point::new(limit, self.maximum, limit),
+        )
     }
 }
 

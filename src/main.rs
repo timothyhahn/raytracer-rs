@@ -158,6 +158,17 @@ fn draw_chapter_13_rocket_from_scene() {
     let _ = canvas.to_jpeg("outputs/chapter_13_rocket.jpg");
 }
 
+fn draw_chapter_14_groups_from_scene() {
+    println!("Drawing chapter 14 groups and bounding boxes scene...");
+    let scene =
+        SceneFile::from_file("scenes/chapter_14.toml").expect("Failed to load chapter 14 scene");
+    let camera = scene.build_camera();
+    let world = scene.build_world();
+    let canvas = camera.render(&world);
+    let _ = canvas.to_ppm("outputs/chapter_14_groups.ppm");
+    let _ = canvas.to_jpeg("outputs/chapter_14_groups.jpg");
+}
+
 fn main() {
     draw_chapter_2_arc();
     draw_chapter_4_clock();
@@ -169,4 +180,5 @@ fn main() {
     draw_chapter_11_reflections_from_scene();
     draw_chapter_12_cubes_from_scene();
     draw_chapter_13_rocket_from_scene();
+    draw_chapter_14_groups_from_scene();
 }

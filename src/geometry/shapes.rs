@@ -1,4 +1,5 @@
 use crate::core::tuples::{Point, Vector};
+use crate::geometry::bounds::Bounds;
 use crate::rendering::rays::Ray;
 
 /// The Shape trait defines the pure geometry interface that all shapes must implement.
@@ -11,6 +12,9 @@ pub trait Shape {
     /// Compute the normal at a point on this shape in object space.
     /// The point is already transformed to object space before this is called.
     fn local_normal_at(&self, point: Point) -> Vector;
+
+    /// Get the bounding box for this shape in object space (untransformed).
+    fn bounds(&self) -> Bounds;
 }
 
 #[cfg(test)]
@@ -54,6 +58,11 @@ mod tests {
             // Convert the point to a vector (for testing)
             Vector::new(point.x, point.y, point.z)
         }
+
+        fn bounds(&self) -> Bounds {
+            // Simple unit cube bounds for testing
+            Bounds::new(Point::new(-1.0, -1.0, -1.0), Point::new(1.0, 1.0, 1.0))
+        }
     }
 
     // Note: Transformation and material tests are now on the Object enum,
@@ -70,8 +79,10 @@ mod tests {
 
         let r = Ray::new(Point::new(0.0, 0.0, -5.0), Vector::new(0.0, 0.0, 1.0));
         let mut shape = Object::Sphere(crate::geometry::sphere::Sphere {
+            world_transformation: Matrix4::identity(),
             transformation: Matrix4::identity(),
             material: Material::default(),
+            parent: None,
         });
 
         // Actually, we can't easily test TestShape through Object enum since
@@ -92,8 +103,10 @@ mod tests {
 
         let r = Ray::new(Point::new(0.0, 0.0, -5.0), Vector::new(0.0, 0.0, 1.0));
         let mut shape = Object::Sphere(crate::geometry::sphere::Sphere {
+            world_transformation: Matrix4::identity(),
             transformation: Matrix4::identity(),
             material: Material::default(),
+            parent: None,
         });
 
         shape.set_transform(Matrix4::translate(5.0, 0.0, 0.0));
@@ -108,8 +121,10 @@ mod tests {
         use crate::rendering::objects::{Intersectable, Object, Transformable};
 
         let mut shape = Object::Sphere(crate::geometry::sphere::Sphere {
+            world_transformation: Matrix4::identity(),
             transformation: Matrix4::identity(),
             material: Material::default(),
+            parent: None,
         });
 
         shape.set_transform(Matrix4::translate(0.0, 1.0, 0.0));
@@ -134,8 +149,10 @@ mod tests {
         use crate::rendering::objects::{Intersectable, Object, Transformable};
 
         let mut shape = Object::Sphere(crate::geometry::sphere::Sphere {
+            world_transformation: Matrix4::identity(),
             transformation: Matrix4::identity(),
             material: Material::default(),
+            parent: None,
         });
 
         let m = Matrix4::scale(1.0, 0.5, 1.0) * Matrix4::rotate_z(std::f64::consts::PI / 5.0);

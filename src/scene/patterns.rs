@@ -135,11 +135,8 @@ impl Pattern {
     }
 
     pub fn color_at_object(&self, object: &Object, world_point: Point) -> Color {
-        let object_point = object
-            .transformation()
-            .inverse()
-            .expect("object transform should be invertible")
-            * world_point;
+        // Use the new world_to_object method which handles parent transformations
+        let object_point = object.world_to_object(world_point);
         let pattern_point = self
             .transform
             .inverse()

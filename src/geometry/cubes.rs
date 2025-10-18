@@ -4,22 +4,35 @@ use crate::{
         matrices::Matrix4,
         tuples::{Point, Tuple, Vector},
     },
-    geometry::shapes::Shape,
-    rendering::rays::Ray,
+    geometry::{bounds::Bounds, shapes::Shape},
+    rendering::{objects::Object, rays::Ray},
     scene::materials::Material,
 };
+use std::cell::RefCell;
+use std::rc::Weak;
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Clone)]
 pub struct Cube {
     pub transformation: Matrix4,
+    pub world_transformation: Matrix4,
     pub material: Material,
+    pub parent: Option<Weak<RefCell<Object>>>,
+}
+
+impl PartialEq for Cube {
+    fn eq(&self, other: &Self) -> bool {
+        self.transformation == other.transformation && self.material == other.material
+        // Ignore parent for equality comparison
+    }
 }
 
 impl Cube {
     pub fn new() -> Self {
         Cube {
             transformation: Matrix4::identity(),
+            world_transformation: Matrix4::identity(),
             material: Material::default(),
+            parent: None,
         }
     }
 }
@@ -82,6 +95,11 @@ impl Shape for Cube {
         } else {
             Vector::new(0.0, 0.0, point.z)
         }
+    }
+
+    /// Get the bounding box for a unit cube (always -1 to 1 in all dimensions).
+    fn bounds(&self) -> Bounds {
+        Bounds::new(Point::new(-1.0, -1.0, -1.0), Point::new(1.0, 1.0, 1.0))
     }
 }
 

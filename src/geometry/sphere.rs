@@ -1,30 +1,47 @@
 use crate::core::matrices::Matrix4;
 use crate::core::tuples::{Point, Tuple, Vector};
+use crate::geometry::bounds::Bounds;
 use crate::geometry::shapes::Shape;
+use crate::rendering::objects::Object;
 use crate::rendering::rays::Ray;
 use crate::scene::materials::Material;
+use std::cell::RefCell;
+use std::rc::Weak;
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Clone)]
 pub struct Sphere {
     pub transformation: Matrix4,
+    pub world_transformation: Matrix4,
     pub material: Material,
+    pub parent: Option<Weak<RefCell<Object>>>,
+}
+
+impl PartialEq for Sphere {
+    fn eq(&self, other: &Self) -> bool {
+        self.transformation == other.transformation && self.material == other.material
+        // Ignore parent for equality comparison
+    }
 }
 
 impl Sphere {
     pub fn new() -> Sphere {
         Sphere {
             transformation: Matrix4::identity(),
+            world_transformation: Matrix4::identity(),
             material: Material::default(),
+            parent: None,
         }
     }
 
     pub fn glass() -> Sphere {
         Sphere {
             transformation: Matrix4::identity(),
+            world_transformation: Matrix4::identity(),
             material: Material::builder()
                 .transparency(1.0)
                 .refractive_index(1.5)
                 .build(),
+            parent: None,
         }
     }
 }
@@ -60,6 +77,11 @@ impl Shape for Sphere {
     fn local_normal_at(&self, point: Point) -> Vector {
         // For a sphere at the origin, the normal is just the point as a vector
         point - Point::new(0.0, 0.0, 0.0)
+    }
+
+    /// Get the bounding box for a unit sphere (always -1 to 1 in all dimensions).
+    fn bounds(&self) -> Bounds {
+        Bounds::new(Point::new(-1.0, -1.0, -1.0), Point::new(1.0, 1.0, 1.0))
     }
 }
 

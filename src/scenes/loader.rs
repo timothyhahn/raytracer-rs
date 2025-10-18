@@ -4,6 +4,7 @@ use crate::core::tuples::{Point, Tuple, Vector};
 use crate::geometry::cones::Cone;
 use crate::geometry::cubes::Cube;
 use crate::geometry::cylinders::Cylinder;
+use crate::geometry::groups::Group;
 use crate::geometry::planes::Plane;
 use crate::geometry::sphere::Sphere;
 use crate::rendering::camera::Camera;
@@ -79,6 +80,13 @@ pub enum ObjectConfig {
         maximum: Option<f64>,
         #[serde(default)]
         closed: Option<bool>,
+    },
+    #[serde(rename = "group")]
+    Group {
+        transform: Option<TransformConfig>,
+        material: Option<MaterialConfig>,
+        #[serde(default)]
+        children: Vec<ObjectConfig>,
     },
 }
 
@@ -217,7 +225,20 @@ impl SceneFile {
             ),
         );
 
-        let objects: Vec<Object> = self.objects.iter().map(build_object).collect();
+        let mut objects: Vec<Object> = Vec::new();
+        for obj_config in &self.objects {
+            let mut obj = build_object(obj_config);
+            // Set world transform for top-level objects (no parent transform)
+            let obj_transform = obj.transformation();
+            obj.set_world_transform(obj_transform);
+
+            // If it's a group, update children's world transforms
+            if let Object::Group(ref mut group) = obj {
+                group.rebuild_children_transforms(Matrix4::identity());
+            }
+
+            objects.push(obj);
+        }
 
         World {
             objects,
@@ -227,16 +248,23 @@ impl SceneFile {
 }
 
 fn build_object(config: &ObjectConfig) -> Object {
+    build_object_with_material(config, None)
+}
+
+/// Build an object, inheriting material from parent if not specified.
+fn build_object_with_material(config: &ObjectConfig, parent_material: Option<&Material>) -> Object {
     match config {
         ObjectConfig::Sphere {
             transform,
             material,
         } => {
             let transformation = build_transform(transform);
-            let mat = build_material(material);
+            let mat = build_material_with_inheritance(material, parent_material);
             Object::Sphere(Sphere {
                 transformation,
+                world_transformation: Matrix4::identity(),
                 material: mat,
+                parent: None,
             })
         }
         ObjectConfig::Plane {
@@ -244,10 +272,12 @@ fn build_object(config: &ObjectConfig) -> Object {
             material,
         } => {
             let transformation = build_transform(transform);
-            let mat = build_material(material);
+            let mat = build_material_with_inheritance(material, parent_material);
             Object::Plane(Plane {
                 transformation,
+                world_transformation: Matrix4::identity(),
                 material: mat,
+                parent: None,
             })
         }
         ObjectConfig::Cube {
@@ -255,10 +285,12 @@ fn build_object(config: &ObjectConfig) -> Object {
             material,
         } => {
             let transformation = build_transform(transform);
-            let mat = build_material(material);
+            let mat = build_material_with_inheritance(material, parent_material);
             Object::Cube(Cube {
                 transformation,
+                world_transformation: Matrix4::identity(),
                 material: mat,
+                parent: None,
             })
         }
         ObjectConfig::Cylinder {
@@ -269,13 +301,15 @@ fn build_object(config: &ObjectConfig) -> Object {
             closed,
         } => {
             let transformation = build_transform(transform);
-            let mat = build_material(material);
+            let mat = build_material_with_inheritance(material, parent_material);
             Object::Cylinder(Cylinder {
                 transformation,
+                world_transformation: Matrix4::identity(),
                 material: mat,
                 minimum: minimum.unwrap_or(f64::NEG_INFINITY),
                 maximum: maximum.unwrap_or(f64::INFINITY),
                 closed: closed.unwrap_or(false),
+                parent: None,
             })
         }
         ObjectConfig::Cone {
@@ -286,15 +320,52 @@ fn build_object(config: &ObjectConfig) -> Object {
             closed,
         } => {
             let transformation = build_transform(transform);
-            let mat = build_material(material);
+            let mat = build_material_with_inheritance(material, parent_material);
             Object::Cone(Cone {
                 transformation,
+                world_transformation: Matrix4::identity(),
                 material: mat,
                 minimum: minimum.unwrap_or(f64::NEG_INFINITY),
                 maximum: maximum.unwrap_or(f64::INFINITY),
                 closed: closed.unwrap_or(false),
+                parent: None,
             })
         }
+        ObjectConfig::Group {
+            transform,
+            material,
+            children,
+        } => {
+            let transformation = build_transform(transform);
+            let group_material = build_material_with_inheritance(material, parent_material);
+
+            let mut group = Group::new();
+            group.transformation = transformation;
+            group.world_transformation = Matrix4::identity();
+            group.material = group_material;
+
+            // Build children with material inheritance from this group
+            for child_config in children {
+                let child_object = build_object_with_material(child_config, Some(&group_material));
+                group.add_child(child_object, Matrix4::identity());
+            }
+
+            Object::Group(group)
+        }
+    }
+}
+
+/// Build material, inheriting from parent if not specified.
+fn build_material_with_inheritance(
+    config: &Option<MaterialConfig>,
+    parent_material: Option<&Material>,
+) -> Material {
+    if config.is_some() {
+        build_material(config)
+    } else if let Some(parent) = parent_material {
+        *parent
+    } else {
+        Material::default()
     }
 }
 

@@ -1,21 +1,36 @@
 use crate::core::floats::EPSILON;
 use crate::core::matrices::Matrix4;
 use crate::core::tuples::{Point, Tuple, Vector};
+use crate::geometry::bounds::Bounds;
 use crate::geometry::shapes::Shape;
+use crate::rendering::objects::Object;
 use crate::rendering::rays::Ray;
 use crate::scene::materials::Material;
+use std::cell::RefCell;
+use std::rc::Weak;
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Clone)]
 pub struct Plane {
     pub transformation: Matrix4,
+    pub world_transformation: Matrix4,
     pub material: Material,
+    pub parent: Option<Weak<RefCell<Object>>>,
+}
+
+impl PartialEq for Plane {
+    fn eq(&self, other: &Self) -> bool {
+        self.transformation == other.transformation && self.material == other.material
+        // Ignore parent for equality comparison
+    }
 }
 
 impl Plane {
     pub fn new() -> Self {
         Self {
             transformation: Matrix4::identity(),
+            world_transformation: Matrix4::identity(),
             material: Material::default(),
+            parent: None,
         }
     }
 }
@@ -42,6 +57,14 @@ impl Shape for Plane {
 
     fn local_normal_at(&self, _point: Point) -> Vector {
         Vector::new(0.0, 1.0, 0.0)
+    }
+
+    /// Get the bounding box for a plane (infinite in x and z, zero thickness in y).
+    fn bounds(&self) -> Bounds {
+        Bounds::new(
+            Point::new(f64::NEG_INFINITY, 0.0, f64::NEG_INFINITY),
+            Point::new(f64::INFINITY, 0.0, f64::INFINITY),
+        )
     }
 }
 

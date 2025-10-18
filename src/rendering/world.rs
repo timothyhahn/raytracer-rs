@@ -27,16 +27,54 @@ impl World {
     pub fn intersect(&self, ray: Ray) -> Vec<Intersection<'_>> {
         let mut intersections: Vec<Intersection> = Vec::with_capacity(self.objects.len() * 2);
         for object in self.objects.iter() {
-            intersections.extend(
-                object
-                    .intersect(ray)
-                    .iter()
-                    .map(|&t| Intersection { object, t }),
-            );
+            // Use recursive helper to handle groups
+            World::collect_intersections(object, ray, &mut intersections);
         }
         // Sort by t value. NaN values (shouldn't happen) are treated as greater than any number
         intersections.sort_by(|a, b| a.t.partial_cmp(&b.t).unwrap_or(std::cmp::Ordering::Equal));
         intersections
+    }
+
+    /// Recursively collect intersections from an object, handling groups specially.
+    /// For groups, this descends into children and collects their intersections.
+    /// For leaf objects, this creates intersections with the object itself.
+    fn collect_intersections<'a>(
+        object: &'a Object,
+        ray: Ray,
+        intersections: &mut Vec<Intersection<'a>>,
+    ) {
+        match object {
+            Object::Group(group) => {
+                // First check bounding box for early rejection
+                use crate::geometry::shapes::Shape;
+                let bounds = group.bounds();
+
+                // Transform ray to group space
+                let local_ray = ray.transform(
+                    group
+                        .transformation
+                        .inverse()
+                        .expect("group transformation should be invertible"),
+                );
+
+                if !bounds.intersects(local_ray) {
+                    // Ray doesn't hit bounding box, skip all children
+                    return;
+                }
+
+                // Recursively collect intersections from children using the local ray
+                for child in group.children() {
+                    World::collect_intersections(child, local_ray, intersections);
+                }
+            }
+            other => {
+                // For non-group objects, create intersections normally
+                let t_values = other.intersect(ray);
+                for &t in &t_values {
+                    intersections.push(Intersection { object: other, t });
+                }
+            }
+        }
     }
 
     pub fn shade_hit(&self, comps: Computations) -> Color {
@@ -170,11 +208,15 @@ impl Default for World {
         };
         let sphere1 = Sphere {
             material,
-            ..Default::default()
+            transformation: Matrix4::identity(),
+            world_transformation: Matrix4::identity(),
+            parent: None,
         };
         let sphere2 = Sphere {
             transformation: Matrix4::scale(0.5, 0.5, 0.5),
-            ..Default::default()
+            world_transformation: Matrix4::scale(0.5, 0.5, 0.5),
+            material: Material::default(),
+            parent: None,
         };
 
         let objects: Vec<Object> = Vec::from([Object::Sphere(sphere1), Object::Sphere(sphere2)]);
@@ -522,7 +564,7 @@ mod tests {
     fn refracted_color_with_total_internal_reflection() {
         let world = World::default();
 
-        let mut shape = world.objects[0];
+        let mut shape = world.objects[0].clone();
 
         shape.set_material(Material {
             transparency: 1.0,
@@ -550,6 +592,7 @@ mod tests {
     fn refracted_color_with_refracted_ray() {
         // Create outer sphere with test pattern and full ambient lighting
         let shape_a = Object::Sphere(Sphere {
+            world_transformation: Matrix4::identity(),
             material: Material {
                 color: Color::new(0.8, 1.0, 0.6),
                 diffuse: 0.7,
@@ -563,12 +606,14 @@ mod tests {
 
         // Create inner sphere (scaled) with transparency
         let shape_b = Object::Sphere(Sphere {
+            world_transformation: Matrix4::identity(),
             transformation: Matrix4::scale(0.5, 0.5, 0.5),
             material: Material {
                 transparency: 1.0,
                 refractive_index: 1.5,
                 ..Default::default()
             },
+            parent: None,
         });
 
         let world = World {
@@ -606,22 +651,26 @@ mod tests {
     pub fn shade_hit_with_transparent_material() {
         let mut world = World::default();
         let floor = Object::Plane(Plane {
+            world_transformation: Matrix4::identity(),
             transformation: Matrix4::translate(0.0, -1.0, 0.0),
             material: Material {
                 transparency: 0.5,
                 refractive_index: 1.5,
                 ..Default::default()
             },
+            parent: None,
         });
         world.objects.push(floor);
 
         let ball = Object::Sphere(Sphere {
+            world_transformation: Matrix4::identity(),
             transformation: Matrix4::translate(0.0, -3.5, -0.5),
             material: Material {
                 color: Color::new(1.0, 0.0, 0.0),
                 ambient: 0.5,
                 ..Default::default()
             },
+            parent: None,
         });
         world.objects.push(ball);
 
@@ -629,7 +678,7 @@ mod tests {
             Point::new(0.0, 0.0, -3.0),
             Vector::new(0.0, -2.0_f64.sqrt() / 2.0, 2.0_f64.sqrt() / 2.0),
         );
-        let intersections = [Intersection::new(2_f64.sqrt(), &floor)];
+        let intersections = [Intersection::new(2_f64.sqrt(), &world.objects[2])];
 
         let comps = intersections[0].prepare_computations_for_intersections(ray, &intersections);
 
@@ -654,6 +703,7 @@ mod tests {
         );
 
         let floor = Object::Plane(Plane {
+            world_transformation: Matrix4::identity(),
             transformation: Matrix4::translate(0.0, -1.0, 0.0),
             material: Material {
                 reflectivity: 0.5,
@@ -661,16 +711,19 @@ mod tests {
                 refractive_index: 1.5,
                 ..Default::default()
             },
+            parent: None,
         });
         world.objects.push(floor);
 
         let ball = Object::Sphere(Sphere {
+            world_transformation: Matrix4::identity(),
             transformation: Matrix4::translate(0.0, -3.5, -0.5),
             material: Material {
                 color: Color::new(1.0, 0.0, 0.0),
                 ambient: 0.5,
                 ..Default::default()
             },
+            parent: None,
         });
         world.objects.push(ball);
 

@@ -104,7 +104,7 @@ impl Intersection<'_> {
 
         Computations {
             time: self.t,
-            object: *self.object,
+            object: self.object.clone(),
             point,
             eye_vector,
             normal_vector,
