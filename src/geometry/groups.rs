@@ -138,6 +138,7 @@ impl Shape for Group {
                 Object::Cylinder(cy) => cy.bounds(),
                 Object::Cone(co) => co.bounds(),
                 Object::Triangle(t) => t.bounds(),
+                Object::SmoothTriangle(st) => st.bounds(),
                 Object::Group(g) => g.bounds(),
             };
 

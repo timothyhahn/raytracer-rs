@@ -7,6 +7,8 @@ use crate::rendering::rays::Ray;
 pub struct Intersection<'a> {
     pub t: f64,
     pub object: &'a Object,
+    pub u: f64, // Barycentric coordinate u
+    pub v: f64, // Barycentric coordinate v
 }
 
 pub struct Computations {
@@ -25,7 +27,11 @@ pub struct Computations {
 
 impl Intersection<'_> {
     pub fn new(t: f64, object: &Object) -> Intersection<'_> {
-        Intersection { t, object }
+        Intersection { t, object, u: 0.0, v: 0.0 }
+    }
+
+    pub fn new_with_uv(t: f64, object: &Object, u: f64, v: f64) -> Intersection<'_> {
+        Intersection { t, object, u, v }
     }
 
     pub fn sort_intersections(mut intersections: Vec<f64>) -> Vec<f64> {
@@ -48,7 +54,8 @@ impl Intersection<'_> {
         intersections: &[Intersection],
     ) -> Computations {
         // Basic properties
-        let normal_vector = self.object.normal_at(ray.position(self.t));
+        // For smooth triangles, we need to pass the intersection to get interpolated normals
+        let normal_vector = self.object.normal_at_with_hit(ray.position(self.t), Some(self));
         let eye_vector = -ray.direction;
 
         let (inside, normal_vector) = if normal_vector.dot(&eye_vector) < 0.0 {

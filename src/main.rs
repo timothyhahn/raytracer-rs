@@ -2,8 +2,15 @@ use raytracer::core::color::Color;
 use raytracer::core::matrices::Matrix4;
 use raytracer::core::tuples::{Point, Tuple, Vector};
 use raytracer::examples::fire_projectiles::{tick, Environment, Projectile};
+use raytracer::rendering::camera::Camera;
 use raytracer::rendering::canvas::Canvas;
+use raytracer::rendering::objects::{HasMaterial, Object, Transformable};
+use raytracer::rendering::world::World;
+use raytracer::scene::lights::PointLight;
+use raytracer::scene::materials::Material;
+use raytracer::scene::transformations::view_transform;
 use raytracer::scenes::loader::SceneFile;
+use raytracer::scenes::obj::{obj_to_group, parse_obj_file};
 use std::f64::consts::PI;
 
 #[allow(dead_code)]
@@ -180,6 +187,63 @@ fn draw_chapter_15_triangles_from_scene() {
     let _ = canvas.to_jpeg("outputs/chapter_15_triangles.jpg");
 }
 
+fn draw_chapter_15_teapot() {
+    println!("Drawing chapter 15 teapot from OBJ file...");
+
+    let obj_content = std::fs::read_to_string("teapot.obj").expect("Failed to read teapot.obj");
+    let parser = parse_obj_file(&obj_content);
+    println!("Loaded {} vertices and {} normals", parser.vertices.len() - 1, parser.normals.len() - 1);
+
+    let teapot_group = obj_to_group(&parser);
+    let mut teapot = Object::Group(teapot_group);
+
+    teapot.set_transform(
+        Matrix4::rotate_x(-PI / 2.0) // Rotate to stand upright
+            * Matrix4::scale(0.1, 0.1, 0.1) // Scale down
+            * Matrix4::translate(0.0, 0.0, 0.0),
+    );
+
+    let material = Material::builder()
+        .color(Color::new(0.8, 0.5, 0.3))
+        .ambient(0.1)
+        .diffuse(0.7)
+        .specular(0.3)
+        .shininess(15.0)
+        .build();
+    teapot.set_material(material);
+
+    // Add a large metallic plane
+    let mut plane = Object::plane();
+    plane.set_transform(Matrix4::translate(0.0, 0.0, 0.0));
+    let plane_material = Material::builder()
+        .color(Color::new(0.3, 0.3, 0.3))
+        .ambient(0.1)
+        .diffuse(0.6)
+        .specular(0.9)
+        .shininess(300.0)
+        .reflectivity(0.5)
+        .build();
+    plane.set_material(plane_material);
+
+    let light = PointLight::new(Point::new(-10.0, 10.0, -10.0), Color::new(1.0, 1.0, 1.0));
+
+    let world = World {
+        objects: vec![plane, teapot],
+        light_source: Some(light),
+    };
+
+    let mut camera = Camera::new(800, 600, PI / 3.0);
+    camera.transform = view_transform(
+        Point::new(0.0, 1.5, -5.0),
+        Point::new(0.0, 1.0, 0.0),
+        Vector::new(0.0, 1.0, 0.0),
+    );
+
+    let canvas = camera.render(&world);
+    let _ = canvas.to_ppm("outputs/chapter_15_teapot.ppm");
+    let _ = canvas.to_jpeg("outputs/chapter_15_teapot.jpg");
+}
+
 fn main() {
     draw_chapter_2_arc();
     draw_chapter_4_clock();
@@ -193,4 +257,5 @@ fn main() {
     draw_chapter_13_rocket_from_scene();
     draw_chapter_14_groups_from_scene();
     draw_chapter_15_triangles_from_scene();
+    draw_chapter_15_teapot();
 }

@@ -68,11 +68,9 @@ impl World {
                 }
             }
             other => {
-                // For non-group objects, create intersections normally
-                let t_values = other.intersect(ray);
-                for &t in &t_values {
-                    intersections.push(Intersection { object: other, t });
-                }
+                // For non-group objects, use intersect_with_object to get u/v for triangles
+                let object_intersections = other.intersect_with_object(ray);
+                intersections.extend(object_intersections);
             }
         }
     }
@@ -278,10 +276,8 @@ mod tests {
         let world = World::default();
         let ray = Ray::new(Point::new(0.0, 0.0, -5.0), Vector::new(0.0, 0.0, 1.0));
         let shape = &world.objects[0];
-        let intersection = Intersection {
-            object: shape,
-            t: shape.intersect(ray)[0],
-        };
+        let t = shape.intersect(ray)[0];
+        let intersection = Intersection::new(t, shape);
         let computations = intersection.prepare_computations(ray);
         let color = world.shade_hit(computations);
         assert_eq!(color, Color::new(0.38066, 0.47583, 0.2855));

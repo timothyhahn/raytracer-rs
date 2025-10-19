@@ -7,7 +7,7 @@ use crate::geometry::groups::{propagate_world_transform_to_group_children, Group
 use crate::geometry::planes::Plane;
 use crate::geometry::shapes::Shape;
 use crate::geometry::sphere::Sphere;
-use crate::geometry::triangles::Triangle;
+use crate::geometry::triangles::{SmoothTriangle, Triangle};
 use crate::rendering::intersections::Intersection;
 use crate::rendering::rays::Ray;
 use crate::scene::materials::Material;
@@ -17,6 +17,7 @@ pub trait Intersectable {
     fn intersect(&self, r: Ray) -> Vec<f64>;
     fn intersect_with_object(&self, r: Ray) -> Vec<Intersection<'_>>;
     fn normal_at(&self, p: Point) -> Vector;
+    fn normal_at_with_hit(&self, p: Point, hit: Option<&Intersection>) -> Vector;
 }
 
 /// Trait for objects that have a material defining their appearance.
@@ -39,6 +40,7 @@ pub enum Object {
     Cylinder(Cylinder),
     Cone(Cone),
     Triangle(Triangle),
+    SmoothTriangle(SmoothTriangle),
     Group(Group),
 }
 
@@ -87,6 +89,7 @@ impl Object {
             Object::Cylinder(cy) => cy.parent.clone(),
             Object::Cone(co) => co.parent.clone(),
             Object::Triangle(t) => t.parent.clone(),
+            Object::SmoothTriangle(st) => st.parent.clone(),
             Object::Group(g) => g.parent.clone(),
         }
     }
@@ -121,6 +124,7 @@ impl Object {
             Object::Cylinder(cy) => cy.parent = Some(parent),
             Object::Cone(co) => co.parent = Some(parent),
             Object::Triangle(t) => t.parent = Some(parent),
+            Object::SmoothTriangle(st) => st.parent = Some(parent),
             Object::Group(g) => g.parent = Some(parent),
         }
     }
@@ -141,6 +145,7 @@ impl Intersectable for Object {
             Object::Cylinder(cy) => cy.local_intersect(local_ray),
             Object::Cone(co) => co.local_intersect(local_ray),
             Object::Triangle(t) => t.local_intersect(local_ray),
+            Object::SmoothTriangle(st) => st.local_intersect(local_ray),
             Object::Group(g) => g.local_intersect(local_ray),
         }
     }
@@ -170,6 +175,30 @@ impl Intersectable for Object {
 
                 all_intersections
             }
+            Object::Triangle(t) => {
+                let local_ray = r.transform(
+                    t.transformation
+                        .inverse()
+                        .expect("triangle transformation should be invertible"),
+                );
+
+                t.local_intersect_uv(local_ray)
+                    .iter()
+                    .map(|(t_val, u, v)| Intersection::new_with_uv(*t_val, self, *u, *v))
+                    .collect()
+            }
+            Object::SmoothTriangle(st) => {
+                let local_ray = r.transform(
+                    st.transformation
+                        .inverse()
+                        .expect("smooth triangle transformation should be invertible"),
+                );
+
+                st.local_intersect_uv(local_ray)
+                    .iter()
+                    .map(|(t_val, u, v)| Intersection::new_with_uv(*t_val, self, *u, *v))
+                    .collect()
+            }
             _ => self
                 .intersect(r)
                 .iter()
@@ -179,6 +208,10 @@ impl Intersectable for Object {
     }
 
     fn normal_at(&self, world_point: Point) -> Vector {
+        self.normal_at_with_hit(world_point, None)
+    }
+
+    fn normal_at_with_hit(&self, world_point: Point, hit: Option<&Intersection>) -> Vector {
         let local_point = self.world_to_object(world_point);
 
         let local_normal = match self {
@@ -188,6 +221,14 @@ impl Intersectable for Object {
             Object::Cylinder(cy) => cy.local_normal_at(local_point),
             Object::Cone(co) => co.local_normal_at(local_point),
             Object::Triangle(t) => t.local_normal_at(local_point),
+            Object::SmoothTriangle(st) => {
+                // For smooth triangles, interpolate the normal using u/v from the hit
+                if let Some(intersection) = hit {
+                    st.interpolated_normal(intersection.u, intersection.v)
+                } else {
+                    st.local_normal_at(local_point)
+                }
+            }
             Object::Group(g) => g.local_normal_at(local_point),
         };
 
@@ -204,6 +245,7 @@ impl HasMaterial for Object {
             Object::Cylinder(cy) => cy.material,
             Object::Cone(co) => co.material,
             Object::Triangle(t) => t.material,
+            Object::SmoothTriangle(st) => st.material,
             Object::Group(g) => g.material,
         }
     }
@@ -216,6 +258,7 @@ impl HasMaterial for Object {
             Object::Cylinder(cy) => cy.material = material,
             Object::Cone(co) => co.material = material,
             Object::Triangle(t) => t.material = material,
+            Object::SmoothTriangle(st) => st.material = material,
             Object::Group(g) => g.material = material,
         }
     }
@@ -230,6 +273,7 @@ impl Transformable for Object {
             Object::Cylinder(cy) => cy.transformation,
             Object::Cone(co) => co.transformation,
             Object::Triangle(t) => t.transformation,
+            Object::SmoothTriangle(st) => st.transformation,
             Object::Group(g) => g.transformation,
         }
     }
@@ -260,6 +304,7 @@ impl Object {
             Object::Cylinder(cy) => cy.world_transformation,
             Object::Cone(co) => co.world_transformation,
             Object::Triangle(t) => t.world_transformation,
+            Object::SmoothTriangle(st) => st.world_transformation,
             Object::Group(g) => g.world_transformation,
         }
     }
@@ -299,6 +344,10 @@ impl Object {
             Object::Triangle(t) => {
                 t.transformation = transformation;
                 t.world_transformation = world_transformation;
+            }
+            Object::SmoothTriangle(st) => {
+                st.transformation = transformation;
+                st.world_transformation = world_transformation;
             }
             Object::Group(g) => {
                 g.transformation = transformation;
