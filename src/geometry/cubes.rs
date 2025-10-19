@@ -8,15 +8,14 @@ use crate::{
     rendering::{objects::Object, rays::Ray},
     scene::materials::Material,
 };
-use std::cell::RefCell;
-use std::rc::Weak;
+use std::sync::{RwLock, Weak as SyncWeak};
 
 #[derive(Debug, Clone)]
 pub struct Cube {
     pub transformation: Matrix4,
     pub world_transformation: Matrix4,
     pub material: Material,
-    pub parent: Option<Weak<RefCell<Object>>>,
+    pub parent: Option<SyncWeak<RwLock<Object>>>,
 }
 
 impl PartialEq for Cube {

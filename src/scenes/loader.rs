@@ -34,12 +34,31 @@ pub struct CameraConfig {
     pub from: [f64; 3],
     pub to: [f64; 3],
     pub up: [f64; 3],
+    #[serde(default = "default_aa_samples")]
+    pub aa_samples: u32,
+}
+
+fn default_aa_samples() -> u32 {
+    1 // No anti-aliasing by default
 }
 
 #[derive(Deserialize)]
-pub struct LightConfig {
-    pub position: [f64; 3],
-    pub intensity: [f64; 3],
+#[serde(tag = "type")]
+pub enum LightConfig {
+    #[serde(rename = "point")]
+    Point {
+        position: [f64; 3],
+        intensity: [f64; 3],
+    },
+    #[serde(rename = "area")]
+    Area {
+        corner: [f64; 3],
+        uvec: [f64; 3],
+        vvec: [f64; 3],
+        usteps: u32,
+        vsteps: u32,
+        intensity: [f64; 3],
+    },
 }
 
 #[derive(Deserialize)]
@@ -217,22 +236,29 @@ impl SceneFile {
             Point::new(self.camera.to[0], self.camera.to[1], self.camera.to[2]),
             Vector::new(self.camera.up[0], self.camera.up[1], self.camera.up[2]),
         );
+        camera.aa_samples = self.camera.aa_samples;
         camera
     }
 
     pub fn build_world(&self) -> World {
-        let light = PointLight::new(
-            Point::new(
-                self.light.position[0],
-                self.light.position[1],
-                self.light.position[2],
-            ),
-            Color::new(
-                self.light.intensity[0],
-                self.light.intensity[1],
-                self.light.intensity[2],
-            ),
-        );
+        let light = match &self.light {
+            LightConfig::Point { position, intensity } => {
+                crate::scene::lights::Light::Point(PointLight::new(
+                    Point::new(position[0], position[1], position[2]),
+                    Color::new(intensity[0], intensity[1], intensity[2]),
+                ))
+            }
+            LightConfig::Area { corner, uvec, vvec, usteps, vsteps, intensity } => {
+                crate::scene::lights::Light::Area(crate::scene::lights::AreaLight::new(
+                    Point::new(corner[0], corner[1], corner[2]),
+                    Vector::new(uvec[0], uvec[1], uvec[2]),
+                    Vector::new(vvec[0], vvec[1], vvec[2]),
+                    *usteps,
+                    *vsteps,
+                    Color::new(intensity[0], intensity[1], intensity[2]),
+                ))
+            }
+        };
 
         let mut objects: Vec<Object> = Vec::new();
         for obj_config in &self.objects {

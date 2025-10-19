@@ -6,7 +6,6 @@ use raytracer::rendering::camera::Camera;
 use raytracer::rendering::canvas::Canvas;
 use raytracer::rendering::objects::{HasMaterial, Object, Transformable};
 use raytracer::rendering::world::World;
-use raytracer::scene::lights::PointLight;
 use raytracer::scene::materials::Material;
 use raytracer::scene::transformations::view_transform;
 use raytracer::scenes::loader::SceneFile;
@@ -225,7 +224,15 @@ fn draw_chapter_15_teapot() {
         .build();
     plane.set_material(plane_material);
 
-    let light = PointLight::new(Point::new(-10.0, 10.0, -10.0), Color::new(1.0, 1.0, 1.0));
+    // Area light for soft shadows
+    let light = raytracer::scene::lights::Light::area(
+        Point::new(-11.0, 10.5, -11.0),
+        Vector::new(2.0, 0.0, 0.0),
+        Vector::new(0.0, 0.0, 2.0),
+        8,
+        8,
+        Color::new(1.0, 1.0, 1.0),
+    );
 
     let world = World {
         objects: vec![plane, teapot],
@@ -238,6 +245,7 @@ fn draw_chapter_15_teapot() {
         Point::new(0.0, 1.0, 0.0),
         Vector::new(0.0, 1.0, 0.0),
     );
+    camera.aa_samples = 4;
 
     let canvas = camera.render(&world);
     let _ = canvas.to_ppm("outputs/chapter_15_teapot.ppm");

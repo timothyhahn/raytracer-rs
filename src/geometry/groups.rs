@@ -5,8 +5,7 @@ use crate::geometry::shapes::Shape;
 use crate::rendering::objects::{HasMaterial, Intersectable, Object, Transformable};
 use crate::rendering::rays::Ray;
 use crate::scene::materials::Material;
-use std::cell::RefCell;
-use std::rc::{Rc, Weak};
+use std::sync::{Arc, RwLock, Weak as SyncWeak};
 
 /// A Group is a collection of shapes that can be transformed together.
 /// Groups support hierarchical transformations through parent-child relationships.
@@ -16,7 +15,7 @@ pub struct Group {
     pub transformation: Matrix4,
     pub world_transformation: Matrix4,
     pub material: Material,
-    pub parent: Option<Weak<RefCell<Object>>>,
+    pub parent: Option<SyncWeak<RwLock<Object>>>,
     children: Vec<Object>,
 }
 
@@ -162,15 +161,15 @@ pub fn add_child_to_group(group: &mut Group, child: Object) {
     group.add_child(child, Matrix4::identity());
 }
 
-/// Legacy function for Rc<RefCell<>> based groups (used by tests with parent pointers).
-pub fn add_child_to_group_rc(group: &Rc<RefCell<Object>>, child: Rc<RefCell<Object>>) {
-    child.borrow_mut().set_parent(Rc::downgrade(group));
+/// Legacy function for Arc<RwLock<>> based groups (used by tests with parent pointers).
+pub fn add_child_to_group_arc(group: &Arc<RwLock<Object>>, child: Arc<RwLock<Object>>) {
+    child.write().unwrap().set_parent(Arc::downgrade(group));
 
     let parent_world_transform = {
-        let group_obj = group.borrow();
+        let group_obj = group.read().unwrap();
         if let Some(parent_weak) = group_obj.parent() {
-            if let Some(parent_rc) = parent_weak.upgrade() {
-                parent_rc.borrow().world_transformation()
+            if let Some(parent_arc) = parent_weak.upgrade() {
+                parent_arc.read().unwrap().world_transformation()
             } else {
                 Matrix4::identity()
             }
@@ -179,18 +178,18 @@ pub fn add_child_to_group_rc(group: &Rc<RefCell<Object>>, child: Rc<RefCell<Obje
         }
     };
 
-    if let Object::Group(ref mut g) = *group.borrow_mut() {
+    if let Object::Group(ref mut g) = *group.write().unwrap() {
         let child_world_transform =
-            parent_world_transform * g.transformation * child.borrow().transformation();
-        let child_obj = (*child.borrow()).clone();
+            parent_world_transform * g.transformation * child.read().unwrap().transformation();
+        let child_obj = (*child.read().unwrap()).clone();
         g.add_child(child_obj, parent_world_transform);
 
-        // Update the original Rc reference so operations on it see the correct world transform
+        // Update the original Arc reference so operations on it see the correct world transform
         child
-            .borrow_mut()
+            .write().unwrap()
             .set_world_transform(child_world_transform);
     } else {
-        panic!("add_child_to_group_rc called on non-group object");
+        panic!("add_child_to_group_arc called on non-group object");
     }
 }
 
@@ -199,8 +198,7 @@ mod tests {
     use super::*;
     use crate::core::matrices::Matrix4;
     use crate::rendering::objects::Object;
-    use std::cell::RefCell;
-    use std::rc::Rc;
+    use std::sync::{Arc, RwLock};
 
     #[test]
     fn creating_a_new_group() {
@@ -217,18 +215,18 @@ mod tests {
 
     #[test]
     fn adding_child_to_group() {
-        let g = Rc::new(RefCell::new(Object::group()));
-        let s = Rc::new(RefCell::new(Object::sphere()));
+        let g = Arc::new(RwLock::new(Object::group()));
+        let s = Arc::new(RwLock::new(Object::sphere()));
 
-        add_child_to_group_rc(&g, s.clone());
+        add_child_to_group_arc(&g, s.clone());
 
-        if let Object::Group(ref group) = *g.borrow() {
+        if let Object::Group(ref group) = *g.read().unwrap() {
             assert!(!group.is_empty());
         } else {
             panic!("Expected group");
         }
 
-        assert!(s.borrow().parent().is_some());
+        assert!(s.read().unwrap().parent().is_some());
     }
 
     #[test]
@@ -247,21 +245,21 @@ mod tests {
         use crate::core::tuples::Tuple;
         use crate::rendering::objects::{Intersectable, Transformable};
 
-        let g = Rc::new(RefCell::new(Object::group()));
-        let s1 = Rc::new(RefCell::new(Object::sphere()));
-        let s2 = Rc::new(RefCell::new(Object::sphere()));
-        s2.borrow_mut()
+        let g = Arc::new(RwLock::new(Object::group()));
+        let s1 = Arc::new(RwLock::new(Object::sphere()));
+        let s2 = Arc::new(RwLock::new(Object::sphere()));
+        s2.write().unwrap()
             .set_transform(Matrix4::translate(0.0, 0.0, -3.0));
-        let s3 = Rc::new(RefCell::new(Object::sphere()));
-        s3.borrow_mut()
+        let s3 = Arc::new(RwLock::new(Object::sphere()));
+        s3.write().unwrap()
             .set_transform(Matrix4::translate(5.0, 0.0, 0.0));
 
-        add_child_to_group_rc(&g, s1);
-        add_child_to_group_rc(&g, s2);
-        add_child_to_group_rc(&g, s3);
+        add_child_to_group_arc(&g, s1);
+        add_child_to_group_arc(&g, s2);
+        add_child_to_group_arc(&g, s3);
 
         let r = Ray::new(Point::new(0.0, 0.0, -5.0), Vector::new(0.0, 0.0, 1.0));
-        let xs = g.borrow().intersect(r);
+        let xs = g.read().unwrap().intersect(r);
 
         assert_eq!(xs.len(), 4);
         // Intersections should be sorted by t value
@@ -279,17 +277,17 @@ mod tests {
         use crate::core::tuples::Tuple;
         use crate::rendering::objects::{Intersectable, Transformable};
 
-        let g = Rc::new(RefCell::new(Object::group()));
-        g.borrow_mut().set_transform(Matrix4::scale(2.0, 2.0, 2.0));
+        let g = Arc::new(RwLock::new(Object::group()));
+        g.write().unwrap().set_transform(Matrix4::scale(2.0, 2.0, 2.0));
 
-        let s = Rc::new(RefCell::new(Object::sphere()));
-        s.borrow_mut()
+        let s = Arc::new(RwLock::new(Object::sphere()));
+        s.write().unwrap()
             .set_transform(Matrix4::translate(5.0, 0.0, 0.0));
 
-        add_child_to_group_rc(&g, s);
+        add_child_to_group_arc(&g, s);
 
         let r = Ray::new(Point::new(10.0, 0.0, -10.0), Vector::new(0.0, 0.0, 1.0));
-        let xs = g.borrow().intersect(r);
+        let xs = g.read().unwrap().intersect(r);
 
         assert_eq!(xs.len(), 2);
     }
@@ -300,21 +298,21 @@ mod tests {
         use crate::rendering::objects::Transformable;
         use std::f64::consts::PI;
 
-        let g1 = Rc::new(RefCell::new(Object::group()));
-        g1.borrow_mut().set_transform(Matrix4::rotate_y(PI / 2.0));
+        let g1 = Arc::new(RwLock::new(Object::group()));
+        g1.write().unwrap().set_transform(Matrix4::rotate_y(PI / 2.0));
 
-        let g2 = Rc::new(RefCell::new(Object::group()));
-        g2.borrow_mut().set_transform(Matrix4::scale(2.0, 2.0, 2.0));
+        let g2 = Arc::new(RwLock::new(Object::group()));
+        g2.write().unwrap().set_transform(Matrix4::scale(2.0, 2.0, 2.0));
 
-        add_child_to_group_rc(&g1, g2.clone());
+        add_child_to_group_arc(&g1, g2.clone());
 
-        let s = Rc::new(RefCell::new(Object::sphere()));
-        s.borrow_mut()
+        let s = Arc::new(RwLock::new(Object::sphere()));
+        s.write().unwrap()
             .set_transform(Matrix4::translate(5.0, 0.0, 0.0));
 
-        add_child_to_group_rc(&g2, s.clone());
+        add_child_to_group_arc(&g2, s.clone());
 
-        let p = s.borrow().world_to_object(Point::new(-2.0, 0.0, -10.0));
+        let p = s.read().unwrap().world_to_object(Point::new(-2.0, 0.0, -10.0));
         assert_eq!(p, Point::new(0.0, 0.0, -1.0));
     }
 
@@ -324,23 +322,23 @@ mod tests {
         use crate::rendering::objects::Transformable;
         use std::f64::consts::PI;
 
-        let g1 = Rc::new(RefCell::new(Object::group()));
-        g1.borrow_mut().set_transform(Matrix4::rotate_y(PI / 2.0));
+        let g1 = Arc::new(RwLock::new(Object::group()));
+        g1.write().unwrap().set_transform(Matrix4::rotate_y(PI / 2.0));
 
-        let g2 = Rc::new(RefCell::new(Object::group()));
-        g2.borrow_mut().set_transform(Matrix4::scale(1.0, 2.0, 3.0));
+        let g2 = Arc::new(RwLock::new(Object::group()));
+        g2.write().unwrap().set_transform(Matrix4::scale(1.0, 2.0, 3.0));
 
-        add_child_to_group_rc(&g1, g2.clone());
+        add_child_to_group_arc(&g1, g2.clone());
 
-        let s = Rc::new(RefCell::new(Object::sphere()));
-        s.borrow_mut()
+        let s = Arc::new(RwLock::new(Object::sphere()));
+        s.write().unwrap()
             .set_transform(Matrix4::translate(5.0, 0.0, 0.0));
 
-        add_child_to_group_rc(&g2, s.clone());
+        add_child_to_group_arc(&g2, s.clone());
 
         let sqrt3_over_3 = 3.0_f64.sqrt() / 3.0;
         let n = s
-            .borrow()
+            .read().unwrap()
             .normal_to_world(Vector::new(sqrt3_over_3, sqrt3_over_3, sqrt3_over_3));
 
         // Expected: (0.2857, 0.4286, -0.8571)
@@ -355,21 +353,21 @@ mod tests {
         use crate::rendering::objects::{Intersectable, Transformable};
         use std::f64::consts::PI;
 
-        let g1 = Rc::new(RefCell::new(Object::group()));
-        g1.borrow_mut().set_transform(Matrix4::rotate_y(PI / 2.0));
+        let g1 = Arc::new(RwLock::new(Object::group()));
+        g1.write().unwrap().set_transform(Matrix4::rotate_y(PI / 2.0));
 
-        let g2 = Rc::new(RefCell::new(Object::group()));
-        g2.borrow_mut().set_transform(Matrix4::scale(1.0, 2.0, 3.0));
+        let g2 = Arc::new(RwLock::new(Object::group()));
+        g2.write().unwrap().set_transform(Matrix4::scale(1.0, 2.0, 3.0));
 
-        add_child_to_group_rc(&g1, g2.clone());
+        add_child_to_group_arc(&g1, g2.clone());
 
-        let s = Rc::new(RefCell::new(Object::sphere()));
-        s.borrow_mut()
+        let s = Arc::new(RwLock::new(Object::sphere()));
+        s.write().unwrap()
             .set_transform(Matrix4::translate(5.0, 0.0, 0.0));
 
-        add_child_to_group_rc(&g2, s.clone());
+        add_child_to_group_arc(&g2, s.clone());
 
-        let n = s.borrow().normal_at(Point::new(1.7321, 1.1547, -5.5774));
+        let n = s.read().unwrap().normal_at(Point::new(1.7321, 1.1547, -5.5774));
 
         // Expected: (0.2857, 0.4286, -0.8571)
         assert!((n.x - 0.2857).abs() < 0.0001);
@@ -400,19 +398,19 @@ mod tests {
         use crate::geometry::shapes::Shape;
         use crate::rendering::objects::Transformable;
 
-        let g = Rc::new(RefCell::new(Object::group()));
+        let g = Arc::new(RwLock::new(Object::group()));
 
         // Add a sphere at the origin
-        let s1 = Rc::new(RefCell::new(Object::sphere()));
-        add_child_to_group_rc(&g, s1);
+        let s1 = Arc::new(RwLock::new(Object::sphere()));
+        add_child_to_group_arc(&g, s1);
 
         // Add a sphere translated to (2, 0, 0)
-        let s2 = Rc::new(RefCell::new(Object::sphere()));
-        s2.borrow_mut()
+        let s2 = Arc::new(RwLock::new(Object::sphere()));
+        s2.write().unwrap()
             .set_transform(Matrix4::translate(2.0, 0.0, 0.0));
-        add_child_to_group_rc(&g, s2);
+        add_child_to_group_arc(&g, s2);
 
-        let bounds = if let Object::Group(ref group) = *g.borrow() {
+        let bounds = if let Object::Group(ref group) = *g.read().unwrap() {
             group.bounds()
         } else {
             panic!("Expected group");
@@ -431,13 +429,13 @@ mod tests {
         use crate::geometry::shapes::Shape;
         use crate::rendering::objects::Transformable;
 
-        let g = Rc::new(RefCell::new(Object::group()));
-        g.borrow_mut().set_transform(Matrix4::scale(2.0, 2.0, 2.0));
+        let g = Arc::new(RwLock::new(Object::group()));
+        g.write().unwrap().set_transform(Matrix4::scale(2.0, 2.0, 2.0));
 
-        let s = Rc::new(RefCell::new(Object::sphere()));
-        add_child_to_group_rc(&g, s);
+        let s = Arc::new(RwLock::new(Object::sphere()));
+        add_child_to_group_arc(&g, s);
 
-        let bounds = if let Object::Group(ref group) = *g.borrow() {
+        let bounds = if let Object::Group(ref group) = *g.read().unwrap() {
             group.bounds()
         } else {
             panic!("Expected group");
@@ -456,16 +454,16 @@ mod tests {
         use crate::rendering::objects::Transformable;
 
         // Create a group with a sphere at (0, 0, -5)
-        let g = Rc::new(RefCell::new(Object::group()));
-        let s = Rc::new(RefCell::new(Object::sphere()));
-        s.borrow_mut()
+        let g = Arc::new(RwLock::new(Object::group()));
+        let s = Arc::new(RwLock::new(Object::sphere()));
+        s.write().unwrap()
             .set_transform(Matrix4::translate(0.0, 0.0, -5.0));
-        add_child_to_group_rc(&g, s);
+        add_child_to_group_arc(&g, s);
 
         // Ray that completely misses the group's bounding box
         let ray = Ray::new(Point::new(10.0, 10.0, 10.0), Vector::new(1.0, 0.0, 0.0));
 
-        let xs = g.borrow().intersect(ray);
+        let xs = g.read().unwrap().intersect(ray);
 
         assert_eq!(xs.len(), 0);
     }
@@ -475,14 +473,14 @@ mod tests {
         use crate::core::tuples::Tuple;
         use crate::rendering::objects::Intersectable;
 
-        let g = Rc::new(RefCell::new(Object::group()));
-        let s = Rc::new(RefCell::new(Object::sphere()));
-        add_child_to_group_rc(&g, s);
+        let g = Arc::new(RwLock::new(Object::group()));
+        let s = Arc::new(RwLock::new(Object::sphere()));
+        add_child_to_group_arc(&g, s);
 
         // Ray that hits the bounding box and the sphere
         let ray = Ray::new(Point::new(0.0, 0.0, -5.0), Vector::new(0.0, 0.0, 1.0));
 
-        let xs = g.borrow().intersect(ray);
+        let xs = g.read().unwrap().intersect(ray);
 
         assert_eq!(xs.len(), 2);
     }
@@ -494,21 +492,21 @@ mod tests {
         use crate::rendering::objects::Transformable;
 
         // Create outer group
-        let g1 = Rc::new(RefCell::new(Object::group()));
+        let g1 = Arc::new(RwLock::new(Object::group()));
 
         // Create inner group translated to (2, 0, 0)
-        let g2 = Rc::new(RefCell::new(Object::group()));
-        g2.borrow_mut()
+        let g2 = Arc::new(RwLock::new(Object::group()));
+        g2.write().unwrap()
             .set_transform(Matrix4::translate(2.0, 0.0, 0.0));
 
         // Add a sphere to inner group
-        let s = Rc::new(RefCell::new(Object::sphere()));
-        add_child_to_group_rc(&g2, s);
+        let s = Arc::new(RwLock::new(Object::sphere()));
+        add_child_to_group_arc(&g2, s);
 
         // Add inner group to outer group
-        add_child_to_group_rc(&g1, g2);
+        add_child_to_group_arc(&g1, g2);
 
-        let bounds = if let Object::Group(ref group) = *g1.borrow() {
+        let bounds = if let Object::Group(ref group) = *g1.read().unwrap() {
             group.bounds()
         } else {
             panic!("Expected group");
@@ -564,7 +562,7 @@ mod tests {
 
         let mut g = Object::group();
 
-        // Add a sphere with a translation (using non-Rc approach for simpler testing)
+        // Add a sphere with a translation (using direct approach for simpler testing)
         let mut s = Object::sphere();
         s.set_transform(Matrix4::translate(5.0, 0.0, 0.0));
 
@@ -604,17 +602,17 @@ mod tests {
         // the child's world_transformation should be parent_world * new_local_transform,
         // not just new_local_transform.
 
-        let g = Rc::new(RefCell::new(Object::group()));
-        g.borrow_mut()
+        let g = Arc::new(RwLock::new(Object::group()));
+        g.write().unwrap()
             .set_transform(Matrix4::translate(10.0, 0.0, 0.0)); // Group at x=10
 
-        let s = Rc::new(RefCell::new(Object::sphere()));
-        s.borrow_mut()
+        let s = Arc::new(RwLock::new(Object::sphere()));
+        s.write().unwrap()
             .set_transform(Matrix4::translate(1.0, 0.0, 0.0)); // Sphere at x=1 relative to group
-        add_child_to_group_rc(&g, s.clone());
+        add_child_to_group_arc(&g, s.clone());
 
         // Sphere should be at x=11 in world space (10 + 1)
-        let p1 = s.borrow().world_to_object(Point::new(11.0, 0.0, 0.0));
+        let p1 = s.read().unwrap().world_to_object(Point::new(11.0, 0.0, 0.0));
         assert_eq!(
             p1,
             Point::new(0.0, 0.0, 0.0),
@@ -622,11 +620,11 @@ mod tests {
         );
 
         // Now update the sphere's transform to translate(2, 0, 0)
-        s.borrow_mut()
+        s.write().unwrap()
             .set_transform(Matrix4::translate(2.0, 0.0, 0.0));
 
         // The sphere should now be at x=12 in world space (10 + 2)
-        let p2 = s.borrow().world_to_object(Point::new(12.0, 0.0, 0.0));
+        let p2 = s.read().unwrap().world_to_object(Point::new(12.0, 0.0, 0.0));
         assert_eq!(
             p2,
             Point::new(0.0, 0.0, 0.0),
@@ -642,23 +640,23 @@ mod tests {
         // When we update a nested group's transform, it should preserve its parent's
         // world transform and propagate the correct combined transform to descendants.
 
-        let g1 = Rc::new(RefCell::new(Object::group()));
-        g1.borrow_mut()
+        let g1 = Arc::new(RwLock::new(Object::group()));
+        g1.write().unwrap()
             .set_transform(Matrix4::translate(10.0, 0.0, 0.0)); // Parent group at x=10
 
-        let g2 = Rc::new(RefCell::new(Object::group()));
-        g2.borrow_mut()
+        let g2 = Arc::new(RwLock::new(Object::group()));
+        g2.write().unwrap()
             .set_transform(Matrix4::translate(1.0, 0.0, 0.0)); // Child group at x=1 relative to parent
-        add_child_to_group_rc(&g1, g2.clone());
+        add_child_to_group_arc(&g1, g2.clone());
 
-        let s = Rc::new(RefCell::new(Object::sphere()));
-        s.borrow_mut()
+        let s = Arc::new(RwLock::new(Object::sphere()));
+        s.write().unwrap()
             .set_transform(Matrix4::translate(0.5, 0.0, 0.0)); // Sphere at x=0.5 relative to child group
-        add_child_to_group_rc(&g2, s.clone());
+        add_child_to_group_arc(&g2, s.clone());
 
         // Sphere should be at x=11.5 in world space (10 + 1 + 0.5)
         {
-            let g2_borrow = g2.borrow();
+            let g2_borrow = g2.read().unwrap();
             let child_sphere = if let Object::Group(ref g2_inner) = *g2_borrow {
                 &g2_inner.children[0]
             } else {
@@ -673,12 +671,12 @@ mod tests {
         }
 
         // Now update g2's transform to translate(2, 0, 0)
-        g2.borrow_mut()
+        g2.write().unwrap()
             .set_transform(Matrix4::translate(2.0, 0.0, 0.0));
 
         // The sphere should now be at x=12.5 in world space (10 + 2 + 0.5)
         {
-            let g2_borrow = g2.borrow();
+            let g2_borrow = g2.read().unwrap();
             let child_sphere = if let Object::Group(ref g2_inner) = *g2_borrow {
                 &g2_inner.children[0]
             } else {
@@ -743,7 +741,7 @@ mod tests {
             .build();
 
         if let Object::Group(ref mut group) = g {
-            group.set_child_material(0, new_material.clone());
+            group.set_child_material(0, new_material);
         }
 
         if let Object::Group(ref group) = g {

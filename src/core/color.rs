@@ -1,5 +1,5 @@
 use super::floats::float_equal;
-use std::ops::{Add, Mul, Sub};
+use std::ops::{Add, Div, Mul, Sub};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Color {
@@ -67,6 +67,13 @@ impl Mul<f64> for Color {
     type Output = Self;
     fn mul(self, scalar: f64) -> Self::Output {
         Color::new(self.red * scalar, self.green * scalar, self.blue * scalar)
+    }
+}
+
+impl Div<f64> for Color {
+    type Output = Self;
+    fn div(self, scalar: f64) -> Self::Output {
+        Color::new(self.red / scalar, self.green / scalar, self.blue / scalar)
     }
 }
 

@@ -8,9 +8,15 @@ fov = 60
 from = [0.0, 1.5, -5.0]
 to = [0.0, 1.0, 0.0]
 up = [0.0, 1.0, 0.0]
+aa_samples = 4
 
 [light]
-position = [-10.0, 10.0, -10.0]
+type = "area"
+corner = [-11.0, 10.5, -11.0]
+uvec = [2.0, 0.0, 0.0]
+vvec = [0.0, 0.0, 2.0]
+usteps = 8
+vsteps = 8
 intensity = [1.0, 1.0, 1.0]
 
 # Reflective floor with transparency - shows both reflection and refraction

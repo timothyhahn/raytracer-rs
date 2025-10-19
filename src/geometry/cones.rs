@@ -8,8 +8,7 @@ use crate::{
     rendering::{objects::Object, rays::Ray},
     scene::materials::Material,
 };
-use std::cell::RefCell;
-use std::rc::Weak;
+use std::sync::{RwLock, Weak as SyncWeak};
 
 #[derive(Debug, Clone)]
 pub struct Cone {
@@ -19,7 +18,7 @@ pub struct Cone {
     pub minimum: f64,
     pub maximum: f64,
     pub closed: bool,
-    pub parent: Option<Weak<RefCell<Object>>>,
+    pub parent: Option<SyncWeak<RwLock<Object>>>,
 }
 
 impl PartialEq for Cone {

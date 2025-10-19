@@ -8,10 +8,16 @@ fov = 70
 from = [-3.5, 1.8, -3.5]
 to = [2.0, 1.0, 2.0]
 up = [0.0, 1.0, 0.0]
+aa_samples = 4
 
 [light]
-position = [2.0, 5.0, -2.0]
-intensity = [1.0, 1.0, 1.0]
+type = "area"
+corner = [1.0, 5.5, -3.0]
+uvec = [2.0, 0.0, 0.0]
+vvec = [0.0, 0.0, 2.0]
+usteps = 8
+vsteps = 8
+intensity = [1.2, 1.2, 1.2]
 
 # Floor - reflective dark and light grey checkerboard
 [[objects]]

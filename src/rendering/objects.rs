@@ -81,7 +81,7 @@ impl Object {
     }
 
     /// Get the parent of this object, if any.
-    pub fn parent(&self) -> Option<std::rc::Weak<std::cell::RefCell<Object>>> {
+    pub fn parent(&self) -> Option<std::sync::Weak<std::sync::RwLock<Object>>> {
         match self {
             Object::Sphere(s) => s.parent.clone(),
             Object::Plane(p) => p.parent.clone(),
@@ -116,7 +116,7 @@ impl Object {
     }
 
     /// Set the parent of this object.
-    pub fn set_parent(&mut self, parent: std::rc::Weak<std::cell::RefCell<Object>>) {
+    pub fn set_parent(&mut self, parent: std::sync::Weak<std::sync::RwLock<Object>>) {
         match self {
             Object::Sphere(s) => s.parent = Some(parent),
             Object::Plane(p) => p.parent = Some(parent),
@@ -280,8 +280,8 @@ impl Transformable for Object {
 
     fn set_transform(&mut self, transformation: Matrix4) {
         let parent_world_transform = if let Some(parent_weak) = self.parent() {
-            if let Some(parent_rc) = parent_weak.upgrade() {
-                parent_rc.borrow().world_transformation()
+            if let Some(parent_arc) = parent_weak.upgrade() {
+                parent_arc.read().unwrap().world_transformation()
             } else {
                 Matrix4::identity()
             }

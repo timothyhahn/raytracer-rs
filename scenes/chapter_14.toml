@@ -8,10 +8,16 @@ fov = 70.0
 from = [0.0, 4.0, -12.0]
 to = [0.0, 0.5, 0.0]
 up = [0.0, 1.0, 0.0]
+aa_samples = 4
 
 [light]
-position = [-10.0, 10.0, -10.0]
-intensity = [1.0, 1.0, 1.0]
+type = "area"
+corner = [-11.0, 10.5, -11.0]
+uvec = [2.0, 0.0, 0.0]
+vvec = [0.0, 0.0, 2.0]
+usteps = 8
+vsteps = 8
+intensity = [1.2, 1.2, 1.2]
 
 # Checkerboard floor
 [[objects]]

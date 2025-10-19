@@ -5,7 +5,7 @@ use crate::geometry::sphere::Sphere;
 use crate::rendering::intersections::{Computations, Intersection};
 use crate::rendering::objects::{HasMaterial, Intersectable, Object};
 use crate::rendering::rays::Ray;
-use crate::scene::lights::PointLight;
+use crate::scene::lights::{Light, PointLight};
 use crate::scene::materials::Material;
 
 const DEFAULT_MAX_REFLECTION_DEPTH: u32 = 5;
@@ -13,7 +13,7 @@ const DEFAULT_MAX_REFRACTION_DEPTH: u32 = 5;
 
 pub struct World {
     pub objects: Vec<Object>,
-    pub light_source: Option<PointLight>,
+    pub light_source: Option<Light>,
 }
 
 impl World {
@@ -86,15 +86,45 @@ impl World {
             None => return Color::black(),
         };
 
-        let in_shadow = self.is_shadowed(comps.over_point);
-        let surface = comps.object.material().lighting(
-            &comps.object,
-            light,
-            comps.point,
-            comps.eye_vector,
-            comps.normal_vector,
-            in_shadow,
-        );
+        let surface = match light {
+            Light::Point(point_light) => {
+                let in_shadow = self.is_shadowed(comps.over_point);
+                comps.object.material().lighting(
+                    &comps.object,
+                    point_light,
+                    comps.point,
+                    comps.eye_vector,
+                    comps.normal_vector,
+                    in_shadow,
+                )
+            }
+            Light::Area(area_light) => {
+                // Sample multiple points on the area light and average contributions
+                let mut color_sum = Color::black();
+
+                for v in 0..area_light.vsteps {
+                    for u in 0..area_light.usteps {
+                        let light_pos = area_light.point_on_light(u, v);
+                        let sample_intensity = area_light.intensity_at(u, v);
+
+                        // Create a temporary point light for this sample
+                        let sample_light = PointLight::new(light_pos, sample_intensity);
+                        let in_shadow = !self.is_point_visible(comps.over_point, light_pos);
+
+                        color_sum = color_sum + comps.object.material().lighting(
+                            &comps.object,
+                            sample_light,
+                            comps.point,
+                            comps.eye_vector,
+                            comps.normal_vector,
+                            in_shadow,
+                        );
+                    }
+                }
+
+                color_sum
+            }
+        };
 
         let reflected_color = self.reflected_color_internal(comps, remaining);
         let refracted_color = self.refracted_color_internal(comps, remaining);
@@ -123,26 +153,76 @@ impl World {
         }
     }
 
+    /// Deterministic shadow check - returns true if the point is in shadow
+    /// For point lights only. For area lights, use intensity_at() for soft shadow percentage.
     pub fn is_shadowed(&self, point: Point) -> bool {
-        // If there's no light source, there's no shadow
         let light = match self.light_source {
             Some(light) => light,
             None => return false,
         };
 
-        // Measure the distance from point to the light source
-        let v = light.position - point;
+        match light {
+            Light::Point(point_light) => {
+                !self.is_point_visible(point, point_light.position)
+            }
+            Light::Area(_) => {
+                // For area lights, this is not well-defined as a boolean.
+                // Callers should use intensity_at() instead.
+                // We'll default to "not shadowed" to avoid breaking existing code.
+                false
+            }
+        }
+    }
+
+    /// Calculate the light intensity at a point (0.0 = fully shadowed, 1.0 = fully lit)
+    /// For area lights, this samples multiple points and averages visibility.
+    /// Note: This is non-deterministic for area lights due to jittered sampling.
+    pub fn intensity_at(&self, point: Point) -> f64 {
+        let light = match self.light_source {
+            Some(light) => light,
+            None => return 0.0,
+        };
+
+        match light {
+            Light::Point(point_light) => {
+                // Simple binary check for point lights
+                if self.is_point_visible(point, point_light.position) {
+                    1.0
+                } else {
+                    0.0
+                }
+            }
+            Light::Area(area_light) => {
+                // Sample multiple points on the area light
+                let mut visible_count = 0;
+                let total_samples = area_light.sample_count();
+
+                for v in 0..area_light.vsteps {
+                    for u in 0..area_light.usteps {
+                        let light_pos = area_light.point_on_light(u, v);
+                        if self.is_point_visible(point, light_pos) {
+                            visible_count += 1;
+                        }
+                    }
+                }
+
+                visible_count as f64 / total_samples as f64
+            }
+        }
+    }
+
+    /// Check if a point on a light source is visible from a given point
+    fn is_point_visible(&self, point: Point, light_position: Point) -> bool {
+        let v = light_position - point;
         let distance = v.magnitude();
         let direction = v.normalize();
 
-        // Create a ray from point toward the light source, then intersect the world
         let ray = Ray::new(point, direction);
         let intersections = self.intersect(ray);
 
-        // See if there was a hit and if so, whether t is less than distance.
         match Intersection::hit(&intersections) {
-            Some(hit) => hit.t < distance,
-            None => false,
+            Some(hit) => hit.t >= distance,
+            None => true,
         }
     }
 
@@ -221,10 +301,10 @@ impl Default for World {
 
         World {
             objects,
-            light_source: Some(PointLight::new(
+            light_source: Some(Light::Point(PointLight::new(
                 Point::new(-10.0, 10.0, -10.0),
                 Color::new(1.0, 1.0, 1.0),
-            )),
+            ))),
         }
     }
 }
@@ -241,7 +321,7 @@ mod tests {
     use crate::rendering::objects::{HasMaterial, Intersectable, Object, Transformable};
     use crate::rendering::rays::Ray;
     use crate::rendering::world::World;
-    use crate::scene::lights::PointLight;
+    use crate::scene::lights::{Light, PointLight};
     use crate::scene::materials::Material;
     use crate::scene::patterns::Pattern;
 
@@ -286,10 +366,10 @@ mod tests {
     #[test]
     fn shading_intersection_from_inside() {
         let world = World {
-            light_source: Some(PointLight::new(
+            light_source: Some(Light::Point(PointLight::new(
                 Point::new(0.0, 0.25, 0.0),
                 Color::new(1.0, 1.0, 1.0),
-            )),
+            ))),
             ..Default::default()
         };
         let ray = Ray::new(Point::new(0.0, 0.0, 0.0), Vector::new(0.0, 0.0, 1.0));
@@ -377,7 +457,7 @@ mod tests {
         obj2.set_transform(Matrix4::translate(0.0, 0.0, 10.0));
 
         let world = World {
-            light_source: Some(PointLight::new(Point::new(0.0, 0.0, -10.0), Color::white())),
+            light_source: Some(Light::Point(PointLight::new(Point::new(0.0, 0.0, -10.0), Color::white()))),
             objects: vec![Object::Sphere(s1), obj2],
         };
 
@@ -469,7 +549,7 @@ mod tests {
     #[test]
     fn color_at_with_mutually_reflective_material() {
         let mut world = World::new();
-        world.light_source = Some(PointLight::new(Point::new(0.0, 0.0, 0.0), Color::white()));
+        world.light_source = Some(Light::Point(PointLight::new(Point::new(0.0, 0.0, 0.0), Color::white())));
 
         let mut lower = Object::plane();
         lower.set_material(Material {
@@ -614,10 +694,10 @@ mod tests {
 
         let world = World {
             objects: vec![shape_a, shape_b],
-            light_source: Some(PointLight::new(
+            light_source: Some(Light::Point(PointLight::new(
                 Point::new(-10.0, 10.0, -10.0),
                 Color::new(1.0, 1.0, 1.0),
-            )),
+            ))),
         };
 
         let ray = Ray::new(Point::new(0.0, 0.0, 0.1), Vector::new(0.0, 1.0, 0.0));
