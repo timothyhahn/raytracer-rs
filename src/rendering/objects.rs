@@ -7,6 +7,7 @@ use crate::geometry::groups::{propagate_world_transform_to_group_children, Group
 use crate::geometry::planes::Plane;
 use crate::geometry::shapes::Shape;
 use crate::geometry::sphere::Sphere;
+use crate::geometry::triangles::Triangle;
 use crate::rendering::intersections::Intersection;
 use crate::rendering::rays::Ray;
 use crate::scene::materials::Material;
@@ -37,6 +38,7 @@ pub enum Object {
     Cube(Cube),
     Cylinder(Cylinder),
     Cone(Cone),
+    Triangle(Triangle),
     Group(Group),
 }
 
@@ -66,6 +68,11 @@ impl Object {
         Object::Cone(Cone::new())
     }
 
+    /// Create a new triangle with the given vertices.
+    pub fn triangle(p1: Point, p2: Point, p3: Point) -> Self {
+        Object::Triangle(Triangle::new(p1, p2, p3))
+    }
+
     /// Create a new empty group with identity transformation.
     pub fn group() -> Self {
         Object::Group(Group::new())
@@ -79,6 +86,7 @@ impl Object {
             Object::Cube(c) => c.parent.clone(),
             Object::Cylinder(cy) => cy.parent.clone(),
             Object::Cone(co) => co.parent.clone(),
+            Object::Triangle(t) => t.parent.clone(),
             Object::Group(g) => g.parent.clone(),
         }
     }
@@ -112,6 +120,7 @@ impl Object {
             Object::Cube(c) => c.parent = Some(parent),
             Object::Cylinder(cy) => cy.parent = Some(parent),
             Object::Cone(co) => co.parent = Some(parent),
+            Object::Triangle(t) => t.parent = Some(parent),
             Object::Group(g) => g.parent = Some(parent),
         }
     }
@@ -131,6 +140,7 @@ impl Intersectable for Object {
             Object::Cube(c) => c.local_intersect(local_ray),
             Object::Cylinder(cy) => cy.local_intersect(local_ray),
             Object::Cone(co) => co.local_intersect(local_ray),
+            Object::Triangle(t) => t.local_intersect(local_ray),
             Object::Group(g) => g.local_intersect(local_ray),
         }
     }
@@ -177,6 +187,7 @@ impl Intersectable for Object {
             Object::Cube(c) => c.local_normal_at(local_point),
             Object::Cylinder(cy) => cy.local_normal_at(local_point),
             Object::Cone(co) => co.local_normal_at(local_point),
+            Object::Triangle(t) => t.local_normal_at(local_point),
             Object::Group(g) => g.local_normal_at(local_point),
         };
 
@@ -192,6 +203,7 @@ impl HasMaterial for Object {
             Object::Cube(c) => c.material,
             Object::Cylinder(cy) => cy.material,
             Object::Cone(co) => co.material,
+            Object::Triangle(t) => t.material,
             Object::Group(g) => g.material,
         }
     }
@@ -203,6 +215,7 @@ impl HasMaterial for Object {
             Object::Cube(c) => c.material = material,
             Object::Cylinder(cy) => cy.material = material,
             Object::Cone(co) => co.material = material,
+            Object::Triangle(t) => t.material = material,
             Object::Group(g) => g.material = material,
         }
     }
@@ -216,6 +229,7 @@ impl Transformable for Object {
             Object::Cube(c) => c.transformation,
             Object::Cylinder(cy) => cy.transformation,
             Object::Cone(co) => co.transformation,
+            Object::Triangle(t) => t.transformation,
             Object::Group(g) => g.transformation,
         }
     }
@@ -245,6 +259,7 @@ impl Object {
             Object::Cube(c) => c.world_transformation,
             Object::Cylinder(cy) => cy.world_transformation,
             Object::Cone(co) => co.world_transformation,
+            Object::Triangle(t) => t.world_transformation,
             Object::Group(g) => g.world_transformation,
         }
     }
@@ -280,6 +295,10 @@ impl Object {
             Object::Cone(co) => {
                 co.transformation = transformation;
                 co.world_transformation = world_transformation;
+            }
+            Object::Triangle(t) => {
+                t.transformation = transformation;
+                t.world_transformation = world_transformation;
             }
             Object::Group(g) => {
                 g.transformation = transformation;

@@ -1,0 +1,90 @@
+# Chapter 15 Scene - Tetrahedron
+
+[camera]
+width = 800
+height = 600
+fov = 60
+from = [3.0, 2.5, -4.0]
+to = [0.0, 0.75, 0.0]
+up = [0.0, 1.0, 0.0]
+
+[light]
+position = [-3.0, 5.0, -5.0]
+intensity = [1.0, 1.0, 1.0]
+
+# Floor - checkerboard pattern
+[[objects]]
+type = "plane"
+
+[objects.material]
+ambient = 0.1
+diffuse = 0.6
+specular = 0.3
+shininess = 200.0
+
+[objects.material.pattern]
+type = "checkers"
+color_a = [0.3, 0.3, 0.3]
+color_b = [0.7, 0.7, 0.7]
+
+# Tetrahedron vertices:
+# Top:   (0, 1.5, 0)
+# Front: (0, 0, 1)
+# Left:  (-0.866, 0, -0.5)
+# Right: (0.866, 0, -0.5)
+
+# Base triangle (bottom face) - Blue
+[[objects]]
+type = "triangle"
+p1 = [0.0, 0.0, 1.0]          # front
+p2 = [0.866, 0.0, -0.5]       # right
+p3 = [-0.866, 0.0, -0.5]      # left
+
+[objects.material]
+color = [0.2, 0.4, 0.9]
+ambient = 0.2
+diffuse = 0.7
+specular = 0.9
+shininess = 300.0
+
+# Front-right face - Red
+[[objects]]
+type = "triangle"
+p1 = [0.0, 1.5, 0.0]          # top
+p2 = [0.0, 0.0, 1.0]          # front
+p3 = [0.866, 0.0, -0.5]       # right
+
+[objects.material]
+color = [0.9, 0.2, 0.2]
+ambient = 0.2
+diffuse = 0.7
+specular = 0.9
+shininess = 300.0
+
+# Back face - Green
+[[objects]]
+type = "triangle"
+p1 = [0.0, 1.5, 0.0]          # top
+p2 = [0.866, 0.0, -0.5]       # right
+p3 = [-0.866, 0.0, -0.5]      # left
+
+[objects.material]
+color = [0.2, 0.9, 0.2]
+ambient = 0.2
+diffuse = 0.7
+specular = 0.9
+shininess = 300.0
+
+# Front-left face - Yellow
+[[objects]]
+type = "triangle"
+p1 = [0.0, 1.5, 0.0]          # top
+p2 = [-0.866, 0.0, -0.5]      # left
+p3 = [0.0, 0.0, 1.0]          # front
+
+[objects.material]
+color = [0.9, 0.9, 0.2]
+ambient = 0.2
+diffuse = 0.7
+specular = 0.9
+shininess = 300.0

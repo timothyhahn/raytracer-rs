@@ -169,6 +169,17 @@ fn draw_chapter_14_groups_from_scene() {
     let _ = canvas.to_jpeg("outputs/chapter_14_groups.jpg");
 }
 
+fn draw_chapter_15_triangles_from_scene() {
+    println!("Drawing chapter 15 triangles scene...");
+    let scene =
+        SceneFile::from_file("scenes/chapter_15.toml").expect("Failed to load chapter 15 scene");
+    let camera = scene.build_camera();
+    let world = scene.build_world();
+    let canvas = camera.render(&world);
+    let _ = canvas.to_ppm("outputs/chapter_15_triangles.ppm");
+    let _ = canvas.to_jpeg("outputs/chapter_15_triangles.jpg");
+}
+
 fn main() {
     draw_chapter_2_arc();
     draw_chapter_4_clock();
@@ -181,4 +192,5 @@ fn main() {
     draw_chapter_12_cubes_from_scene();
     draw_chapter_13_rocket_from_scene();
     draw_chapter_14_groups_from_scene();
+    draw_chapter_15_triangles_from_scene();
 }

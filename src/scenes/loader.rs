@@ -7,6 +7,7 @@ use crate::geometry::cylinders::Cylinder;
 use crate::geometry::groups::Group;
 use crate::geometry::planes::Plane;
 use crate::geometry::sphere::Sphere;
+use crate::geometry::triangles::Triangle;
 use crate::rendering::camera::Camera;
 use crate::rendering::objects::{Object, Transformable};
 use crate::rendering::world::World;
@@ -80,6 +81,14 @@ pub enum ObjectConfig {
         maximum: Option<f64>,
         #[serde(default)]
         closed: Option<bool>,
+    },
+    #[serde(rename = "triangle")]
+    Triangle {
+        p1: [f64; 3],
+        p2: [f64; 3],
+        p3: [f64; 3],
+        transform: Option<TransformConfig>,
+        material: Option<MaterialConfig>,
     },
     #[serde(rename = "group")]
     Group {
@@ -330,6 +339,26 @@ fn build_object_with_material(config: &ObjectConfig, parent_material: Option<&Ma
                 closed: closed.unwrap_or(false),
                 parent: None,
             })
+        }
+        ObjectConfig::Triangle {
+            p1,
+            p2,
+            p3,
+            transform,
+            material,
+        } => {
+            let transformation = build_transform(transform);
+            let mat = build_material_with_inheritance(material, parent_material);
+            let mut triangle = Triangle::new(
+                Point::new(p1[0], p1[1], p1[2]),
+                Point::new(p2[0], p2[1], p2[2]),
+                Point::new(p3[0], p3[1], p3[2]),
+            );
+            triangle.transformation = transformation;
+            triangle.world_transformation = Matrix4::identity();
+            triangle.material = mat;
+            triangle.parent = None;
+            Object::Triangle(triangle)
         }
         ObjectConfig::Group {
             transform,
