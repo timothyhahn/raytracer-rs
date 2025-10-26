@@ -14,8 +14,8 @@ type = "area"
 corner = [-4.0, 5.5, -6.0]
 uvec = [2.0, 0.0, 0.0]
 vvec = [0.0, 0.0, 2.0]
-usteps = 8
-vsteps = 8
+usteps = 6
+vsteps = 6
 intensity = [1.0, 1.0, 1.0]
 
 # Floor - checkerboard pattern

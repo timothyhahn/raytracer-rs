@@ -7,15 +7,15 @@ fov = 60
 from = [0.0, 2.5, -8.0]
 to = [0.0, 1.5, 0.0]
 up = [0.0, 1.0, 0.0]
-aa_samples = 4
+aa_samples = 2
 
 [light]
 type = "area"
 corner = [-4.0, 4.5, -1.0]
 uvec = [2.0, 0.0, 0.0]
 vvec = [0.0, 0.0, 2.0]
-usteps = 8
-vsteps = 8
+usteps = 6
+vsteps = 6
 intensity = [1.5, 1.5, 1.5]
 
 # Floor

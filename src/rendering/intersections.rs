@@ -27,7 +27,12 @@ pub struct Computations {
 
 impl Intersection<'_> {
     pub fn new(t: f64, object: &Object) -> Intersection<'_> {
-        Intersection { t, object, u: 0.0, v: 0.0 }
+        Intersection {
+            t,
+            object,
+            u: 0.0,
+            v: 0.0,
+        }
     }
 
     pub fn new_with_uv(t: f64, object: &Object, u: f64, v: f64) -> Intersection<'_> {
@@ -55,7 +60,9 @@ impl Intersection<'_> {
     ) -> Computations {
         // Basic properties
         // For smooth triangles, we need to pass the intersection to get interpolated normals
-        let normal_vector = self.object.normal_at_with_hit(ray.position(self.t), Some(self));
+        let normal_vector = self
+            .object
+            .normal_at_with_hit(ray.position(self.t), Some(self));
         let eye_vector = -ray.direction;
 
         let (inside, normal_vector) = if normal_vector.dot(&eye_vector) < 0.0 {

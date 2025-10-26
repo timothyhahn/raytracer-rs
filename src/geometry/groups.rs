@@ -186,7 +186,8 @@ pub fn add_child_to_group_arc(group: &Arc<RwLock<Object>>, child: Arc<RwLock<Obj
 
         // Update the original Arc reference so operations on it see the correct world transform
         child
-            .write().unwrap()
+            .write()
+            .unwrap()
             .set_world_transform(child_world_transform);
     } else {
         panic!("add_child_to_group_arc called on non-group object");
@@ -248,10 +249,12 @@ mod tests {
         let g = Arc::new(RwLock::new(Object::group()));
         let s1 = Arc::new(RwLock::new(Object::sphere()));
         let s2 = Arc::new(RwLock::new(Object::sphere()));
-        s2.write().unwrap()
+        s2.write()
+            .unwrap()
             .set_transform(Matrix4::translate(0.0, 0.0, -3.0));
         let s3 = Arc::new(RwLock::new(Object::sphere()));
-        s3.write().unwrap()
+        s3.write()
+            .unwrap()
             .set_transform(Matrix4::translate(5.0, 0.0, 0.0));
 
         add_child_to_group_arc(&g, s1);
@@ -278,10 +281,13 @@ mod tests {
         use crate::rendering::objects::{Intersectable, Transformable};
 
         let g = Arc::new(RwLock::new(Object::group()));
-        g.write().unwrap().set_transform(Matrix4::scale(2.0, 2.0, 2.0));
+        g.write()
+            .unwrap()
+            .set_transform(Matrix4::scale(2.0, 2.0, 2.0));
 
         let s = Arc::new(RwLock::new(Object::sphere()));
-        s.write().unwrap()
+        s.write()
+            .unwrap()
             .set_transform(Matrix4::translate(5.0, 0.0, 0.0));
 
         add_child_to_group_arc(&g, s);
@@ -299,20 +305,28 @@ mod tests {
         use std::f64::consts::PI;
 
         let g1 = Arc::new(RwLock::new(Object::group()));
-        g1.write().unwrap().set_transform(Matrix4::rotate_y(PI / 2.0));
+        g1.write()
+            .unwrap()
+            .set_transform(Matrix4::rotate_y(PI / 2.0));
 
         let g2 = Arc::new(RwLock::new(Object::group()));
-        g2.write().unwrap().set_transform(Matrix4::scale(2.0, 2.0, 2.0));
+        g2.write()
+            .unwrap()
+            .set_transform(Matrix4::scale(2.0, 2.0, 2.0));
 
         add_child_to_group_arc(&g1, g2.clone());
 
         let s = Arc::new(RwLock::new(Object::sphere()));
-        s.write().unwrap()
+        s.write()
+            .unwrap()
             .set_transform(Matrix4::translate(5.0, 0.0, 0.0));
 
         add_child_to_group_arc(&g2, s.clone());
 
-        let p = s.read().unwrap().world_to_object(Point::new(-2.0, 0.0, -10.0));
+        let p = s
+            .read()
+            .unwrap()
+            .world_to_object(Point::new(-2.0, 0.0, -10.0));
         assert_eq!(p, Point::new(0.0, 0.0, -1.0));
     }
 
@@ -323,23 +337,30 @@ mod tests {
         use std::f64::consts::PI;
 
         let g1 = Arc::new(RwLock::new(Object::group()));
-        g1.write().unwrap().set_transform(Matrix4::rotate_y(PI / 2.0));
+        g1.write()
+            .unwrap()
+            .set_transform(Matrix4::rotate_y(PI / 2.0));
 
         let g2 = Arc::new(RwLock::new(Object::group()));
-        g2.write().unwrap().set_transform(Matrix4::scale(1.0, 2.0, 3.0));
+        g2.write()
+            .unwrap()
+            .set_transform(Matrix4::scale(1.0, 2.0, 3.0));
 
         add_child_to_group_arc(&g1, g2.clone());
 
         let s = Arc::new(RwLock::new(Object::sphere()));
-        s.write().unwrap()
+        s.write()
+            .unwrap()
             .set_transform(Matrix4::translate(5.0, 0.0, 0.0));
 
         add_child_to_group_arc(&g2, s.clone());
 
         let sqrt3_over_3 = 3.0_f64.sqrt() / 3.0;
-        let n = s
-            .read().unwrap()
-            .normal_to_world(Vector::new(sqrt3_over_3, sqrt3_over_3, sqrt3_over_3));
+        let n = s.read().unwrap().normal_to_world(Vector::new(
+            sqrt3_over_3,
+            sqrt3_over_3,
+            sqrt3_over_3,
+        ));
 
         // Expected: (0.2857, 0.4286, -0.8571)
         assert!((n.x - 0.2857).abs() < 0.0001);
@@ -354,20 +375,28 @@ mod tests {
         use std::f64::consts::PI;
 
         let g1 = Arc::new(RwLock::new(Object::group()));
-        g1.write().unwrap().set_transform(Matrix4::rotate_y(PI / 2.0));
+        g1.write()
+            .unwrap()
+            .set_transform(Matrix4::rotate_y(PI / 2.0));
 
         let g2 = Arc::new(RwLock::new(Object::group()));
-        g2.write().unwrap().set_transform(Matrix4::scale(1.0, 2.0, 3.0));
+        g2.write()
+            .unwrap()
+            .set_transform(Matrix4::scale(1.0, 2.0, 3.0));
 
         add_child_to_group_arc(&g1, g2.clone());
 
         let s = Arc::new(RwLock::new(Object::sphere()));
-        s.write().unwrap()
+        s.write()
+            .unwrap()
             .set_transform(Matrix4::translate(5.0, 0.0, 0.0));
 
         add_child_to_group_arc(&g2, s.clone());
 
-        let n = s.read().unwrap().normal_at(Point::new(1.7321, 1.1547, -5.5774));
+        let n = s
+            .read()
+            .unwrap()
+            .normal_at(Point::new(1.7321, 1.1547, -5.5774));
 
         // Expected: (0.2857, 0.4286, -0.8571)
         assert!((n.x - 0.2857).abs() < 0.0001);
@@ -406,7 +435,8 @@ mod tests {
 
         // Add a sphere translated to (2, 0, 0)
         let s2 = Arc::new(RwLock::new(Object::sphere()));
-        s2.write().unwrap()
+        s2.write()
+            .unwrap()
             .set_transform(Matrix4::translate(2.0, 0.0, 0.0));
         add_child_to_group_arc(&g, s2);
 
@@ -430,7 +460,9 @@ mod tests {
         use crate::rendering::objects::Transformable;
 
         let g = Arc::new(RwLock::new(Object::group()));
-        g.write().unwrap().set_transform(Matrix4::scale(2.0, 2.0, 2.0));
+        g.write()
+            .unwrap()
+            .set_transform(Matrix4::scale(2.0, 2.0, 2.0));
 
         let s = Arc::new(RwLock::new(Object::sphere()));
         add_child_to_group_arc(&g, s);
@@ -456,7 +488,8 @@ mod tests {
         // Create a group with a sphere at (0, 0, -5)
         let g = Arc::new(RwLock::new(Object::group()));
         let s = Arc::new(RwLock::new(Object::sphere()));
-        s.write().unwrap()
+        s.write()
+            .unwrap()
             .set_transform(Matrix4::translate(0.0, 0.0, -5.0));
         add_child_to_group_arc(&g, s);
 
@@ -496,7 +529,8 @@ mod tests {
 
         // Create inner group translated to (2, 0, 0)
         let g2 = Arc::new(RwLock::new(Object::group()));
-        g2.write().unwrap()
+        g2.write()
+            .unwrap()
             .set_transform(Matrix4::translate(2.0, 0.0, 0.0));
 
         // Add a sphere to inner group
@@ -603,16 +637,21 @@ mod tests {
         // not just new_local_transform.
 
         let g = Arc::new(RwLock::new(Object::group()));
-        g.write().unwrap()
+        g.write()
+            .unwrap()
             .set_transform(Matrix4::translate(10.0, 0.0, 0.0)); // Group at x=10
 
         let s = Arc::new(RwLock::new(Object::sphere()));
-        s.write().unwrap()
+        s.write()
+            .unwrap()
             .set_transform(Matrix4::translate(1.0, 0.0, 0.0)); // Sphere at x=1 relative to group
         add_child_to_group_arc(&g, s.clone());
 
         // Sphere should be at x=11 in world space (10 + 1)
-        let p1 = s.read().unwrap().world_to_object(Point::new(11.0, 0.0, 0.0));
+        let p1 = s
+            .read()
+            .unwrap()
+            .world_to_object(Point::new(11.0, 0.0, 0.0));
         assert_eq!(
             p1,
             Point::new(0.0, 0.0, 0.0),
@@ -620,11 +659,15 @@ mod tests {
         );
 
         // Now update the sphere's transform to translate(2, 0, 0)
-        s.write().unwrap()
+        s.write()
+            .unwrap()
             .set_transform(Matrix4::translate(2.0, 0.0, 0.0));
 
         // The sphere should now be at x=12 in world space (10 + 2)
-        let p2 = s.read().unwrap().world_to_object(Point::new(12.0, 0.0, 0.0));
+        let p2 = s
+            .read()
+            .unwrap()
+            .world_to_object(Point::new(12.0, 0.0, 0.0));
         assert_eq!(
             p2,
             Point::new(0.0, 0.0, 0.0),
@@ -641,16 +684,19 @@ mod tests {
         // world transform and propagate the correct combined transform to descendants.
 
         let g1 = Arc::new(RwLock::new(Object::group()));
-        g1.write().unwrap()
+        g1.write()
+            .unwrap()
             .set_transform(Matrix4::translate(10.0, 0.0, 0.0)); // Parent group at x=10
 
         let g2 = Arc::new(RwLock::new(Object::group()));
-        g2.write().unwrap()
+        g2.write()
+            .unwrap()
             .set_transform(Matrix4::translate(1.0, 0.0, 0.0)); // Child group at x=1 relative to parent
         add_child_to_group_arc(&g1, g2.clone());
 
         let s = Arc::new(RwLock::new(Object::sphere()));
-        s.write().unwrap()
+        s.write()
+            .unwrap()
             .set_transform(Matrix4::translate(0.5, 0.0, 0.0)); // Sphere at x=0.5 relative to child group
         add_child_to_group_arc(&g2, s.clone());
 
@@ -671,7 +717,8 @@ mod tests {
         }
 
         // Now update g2's transform to translate(2, 0, 0)
-        g2.write().unwrap()
+        g2.write()
+            .unwrap()
             .set_transform(Matrix4::translate(2.0, 0.0, 0.0));
 
         // The sphere should now be at x=12.5 in world space (10 + 2 + 0.5)

@@ -242,22 +242,28 @@ impl SceneFile {
 
     pub fn build_world(&self) -> World {
         let light = match &self.light {
-            LightConfig::Point { position, intensity } => {
-                crate::scene::lights::Light::Point(PointLight::new(
-                    Point::new(position[0], position[1], position[2]),
-                    Color::new(intensity[0], intensity[1], intensity[2]),
-                ))
-            }
-            LightConfig::Area { corner, uvec, vvec, usteps, vsteps, intensity } => {
-                crate::scene::lights::Light::Area(crate::scene::lights::AreaLight::new(
-                    Point::new(corner[0], corner[1], corner[2]),
-                    Vector::new(uvec[0], uvec[1], uvec[2]),
-                    Vector::new(vvec[0], vvec[1], vvec[2]),
-                    *usteps,
-                    *vsteps,
-                    Color::new(intensity[0], intensity[1], intensity[2]),
-                ))
-            }
+            LightConfig::Point {
+                position,
+                intensity,
+            } => crate::scene::lights::Light::Point(PointLight::new(
+                Point::new(position[0], position[1], position[2]),
+                Color::new(intensity[0], intensity[1], intensity[2]),
+            )),
+            LightConfig::Area {
+                corner,
+                uvec,
+                vvec,
+                usteps,
+                vsteps,
+                intensity,
+            } => crate::scene::lights::Light::Area(crate::scene::lights::AreaLight::new(
+                Point::new(corner[0], corner[1], corner[2]),
+                Vector::new(uvec[0], uvec[1], uvec[2]),
+                Vector::new(vvec[0], vvec[1], vvec[2]),
+                *usteps,
+                *vsteps,
+                Color::new(intensity[0], intensity[1], intensity[2]),
+            )),
         };
 
         let mut objects: Vec<Object> = Vec::new();

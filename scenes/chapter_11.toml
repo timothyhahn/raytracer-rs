@@ -15,8 +15,8 @@ type = "area"
 corner = [-11.0, 10.5, -11.0]
 uvec = [2.0, 0.0, 0.0]
 vvec = [0.0, 0.0, 2.0]
-usteps = 8
-vsteps = 8
+usteps = 6
+vsteps = 6
 intensity = [1.0, 1.0, 1.0]
 
 # Reflective floor with transparency - shows both reflection and refraction

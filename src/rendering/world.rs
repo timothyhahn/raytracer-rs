@@ -111,14 +111,15 @@ impl World {
                         let sample_light = PointLight::new(light_pos, sample_intensity);
                         let in_shadow = !self.is_point_visible(comps.over_point, light_pos);
 
-                        color_sum = color_sum + comps.object.material().lighting(
-                            &comps.object,
-                            sample_light,
-                            comps.point,
-                            comps.eye_vector,
-                            comps.normal_vector,
-                            in_shadow,
-                        );
+                        color_sum = color_sum
+                            + comps.object.material().lighting(
+                                &comps.object,
+                                sample_light,
+                                comps.point,
+                                comps.eye_vector,
+                                comps.normal_vector,
+                                in_shadow,
+                            );
                     }
                 }
 
@@ -146,7 +147,8 @@ impl World {
         let intersections = self.intersect(ray);
         match Intersection::hit(&intersections) {
             Some(hit) => {
-                let comps = hit.prepare_computations(ray);
+                // Pass ALL intersections for proper container tracking in refractions
+                let comps = hit.prepare_computations_for_intersections(ray, &intersections);
                 self.shade_hit_internal(&comps, remaining)
             }
             None => Color::black(),
@@ -162,9 +164,7 @@ impl World {
         };
 
         match light {
-            Light::Point(point_light) => {
-                !self.is_point_visible(point, point_light.position)
-            }
+            Light::Point(point_light) => !self.is_point_visible(point, point_light.position),
             Light::Area(_) => {
                 // For area lights, this is not well-defined as a boolean.
                 // Callers should use intensity_at() instead.
@@ -457,7 +457,10 @@ mod tests {
         obj2.set_transform(Matrix4::translate(0.0, 0.0, 10.0));
 
         let world = World {
-            light_source: Some(Light::Point(PointLight::new(Point::new(0.0, 0.0, -10.0), Color::white()))),
+            light_source: Some(Light::Point(PointLight::new(
+                Point::new(0.0, 0.0, -10.0),
+                Color::white(),
+            ))),
             objects: vec![Object::Sphere(s1), obj2],
         };
 
@@ -549,7 +552,10 @@ mod tests {
     #[test]
     fn color_at_with_mutually_reflective_material() {
         let mut world = World::new();
-        world.light_source = Some(Light::Point(PointLight::new(Point::new(0.0, 0.0, 0.0), Color::white())));
+        world.light_source = Some(Light::Point(PointLight::new(
+            Point::new(0.0, 0.0, 0.0),
+            Color::white(),
+        )));
 
         let mut lower = Object::plane();
         lower.set_material(Material {

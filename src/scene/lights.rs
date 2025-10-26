@@ -20,17 +20,24 @@ impl PointLight {
 /// An area light for soft shadows
 #[derive(Clone, Copy, Debug)]
 pub struct AreaLight {
-    pub corner: Point,        // Corner of the light area
-    pub uvec: Vector,         // Vector along u axis (full width)
-    pub vvec: Vector,         // Vector along v axis (full height)
-    pub usteps: u32,          // Number of samples in u direction
-    pub vsteps: u32,          // Number of samples in v direction
+    pub corner: Point, // Corner of the light area
+    pub uvec: Vector,  // Vector along u axis (full width)
+    pub vvec: Vector,  // Vector along v axis (full height)
+    pub usteps: u32,   // Number of samples in u direction
+    pub vsteps: u32,   // Number of samples in v direction
     pub intensity: Color,
-    jitter: bool,             // Whether to jitter sample positions
+    jitter: bool, // Whether to jitter sample positions
 }
 
 impl AreaLight {
-    pub fn new(corner: Point, uvec: Vector, vvec: Vector, usteps: u32, vsteps: u32, intensity: Color) -> Self {
+    pub fn new(
+        corner: Point,
+        uvec: Vector,
+        vvec: Vector,
+        usteps: u32,
+        vsteps: u32,
+        intensity: Color,
+    ) -> Self {
         // Ensure at least 1 sample in each direction to avoid division by zero
         let usteps = usteps.max(1);
         let vsteps = vsteps.max(1);
@@ -85,8 +92,17 @@ impl Light {
         Light::Point(PointLight::new(position, intensity))
     }
 
-    pub fn area(corner: Point, uvec: Vector, vvec: Vector, usteps: u32, vsteps: u32, intensity: Color) -> Self {
-        Light::Area(AreaLight::new(corner, uvec, vvec, usteps, vsteps, intensity))
+    pub fn area(
+        corner: Point,
+        uvec: Vector,
+        vvec: Vector,
+        usteps: u32,
+        vsteps: u32,
+        intensity: Color,
+    ) -> Self {
+        Light::Area(AreaLight::new(
+            corner, uvec, vvec, usteps, vsteps, intensity,
+        ))
     }
 
     pub fn intensity(&self) -> Color {

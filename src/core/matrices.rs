@@ -13,6 +13,10 @@ impl Matrix4 {
         Matrix4 { data }
     }
 
+    pub fn data(&self) -> &[[f64; 4]; 4] {
+        &self.data
+    }
+
     // Transformation matrices
     pub fn identity() -> Matrix4 {
         Matrix4 {

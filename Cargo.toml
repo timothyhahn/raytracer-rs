@@ -11,3 +11,17 @@ toml = "0.8"
 serde = { version = "1.0", features = ["derive"] }
 rayon = "1.10"
 rand = "0.8"
+indicatif = { version = "0.17", features = ["rayon"] }
+atty = "0.2"
+clap = { version = "4.5", features = ["derive"] }
+
+# GPU acceleration (optional)
+wgpu = { version = "0.19", optional = true }
+bytemuck = { version = "1.14", features = ["derive"], optional = true }
+pollster = { version = "0.3", optional = true }
+once_cell = { version = "1.19", optional = true }
+
+[features]
+default = ["cpu"]
+cpu = []
+gpu = ["wgpu", "bytemuck", "pollster", "once_cell"]
